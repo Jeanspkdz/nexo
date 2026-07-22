@@ -10,7 +10,7 @@ Build a **WhatsApp-first booking receptionist for multi-staff beauty salons**. I
 
 Why this wedge:
 
-- There is direct growth evidence: INEI reports that 2024 business registrations (“altas”) increased 4.3% overall, while **salon registrations grew 10.5%**; this measures formal business creation, not revenue or total market size ([INEI, *Perú: Estructura Empresarial 2024*](https://www.inei.gob.pe/media/MenuRecursivo/publicaciones_digitales/Est/Lib2045/libro.pdf)).
+- There is direct growth evidence: INEI reports that 2024 business registrations (“altas”) increased 4.3% overall, while **salon registrations grew 10.5%**; this measures formal business creation, not revenue or total market size ([INEI, _Perú: Estructura Empresarial 2024_](https://www.inei.gob.pe/media/MenuRecursivo/publicaciones_digitales/Est/Lib2045/libro.pdf)).
 - Appointment inventory is simpler than restaurant tables and safer than medical workflows.
 - Peru is ready for a messaging-first flow: 94.8% of households had a smartphone in 2024 and 92.6% had fixed or mobile internet; in 2023, 91.4% of internet users used social networks or instant messaging ([OSIPTEL ERESTEL 2024](https://www.osiptel.gob.pe/portal-del-usuario/noticias/erestel-el-92-6-de-hogares-peruanos-tiene-acceso-a-internet-fijo-y-movil/), [OSIPTEL ERESTEL 2023](https://www.osiptel.gob.pe/portal-del-usuario/noticias/erestel-los-peruanos-hacen-mayor-uso-de-internet-para-acceder-a-redes-sociales-y-mensajeria-instantanea/)). These are national consumer-access indicators, not proof that salons want automation.
 - The category already pays for software: AgendaPro actively sells in Peru to salons, spas, beauty and health businesses, with online booking, WhatsApp/AI, payments and marketing. That validates the category but also means a generic calendar is not differentiated ([AgendaPro Peru](https://agendapro.com/pe), [AgendaPro plans](https://agendapro.com/pe/planes)).
@@ -27,14 +27,14 @@ Peru is overwhelmingly a micro/small-business market: at year-end 2024 it had 2,
 
 Scores are decision-model judgments (1 poor, 5 strong), not measured market facts. Weighting favors sellability: demand/growth 15%, pain 20%, willingness to pay 20%, sales ease 15%, MVP simplicity 20%, competitive opening 10%.
 
-| Rank | Sector | Growth / demand | Pain | WTP | Sales ease | MVP simplicity | Opening | Weighted /5 | Best first use case |
-|---:|---|---:|---:|---:|---:|---:|---:|---:|---|
-| 1 | Multi-staff beauty salons | 4.5 | 4.5 | 3.5 | 3.5 | 4.5 | 3.0 | **4.0** | WhatsApp booking, rescheduling and reminders across staff |
-| 2 | Private dental/specialist practices | 4.0 | 4.5 | 4.5 | 2.5 | 3.0 | 2.5 | **3.7** | Confirmation/reminder plus filling cancelled slots |
-| 3 | Wellness clinics/spas | 3.0 | 4.0 | 4.0 | 3.0 | 3.5 | 3.0 | **3.5** | Recurring-session scheduling and reminders |
-| 4 | Veterinary clinics (other local service) | 3.5 | 4.0 | 3.5 | 3.0 | 3.5 | 3.5 | **3.5** | Vaccination/follow-up reminders and appointment booking |
-| 5 | Premium barbershops | 3.0 | 3.5 | 2.5 | 3.5 | 4.5 | 3.0 | **3.4** | Choose barber and book a timed service |
-| 6 | Reservation-led restaurants | 4.0 | 3.5 | 3.5 | 2.5 | 2.0 | 1.5 | **2.9** | Confirm party size/time and reduce no-shows |
+| Rank | Sector                                   | Growth / demand | Pain | WTP | Sales ease | MVP simplicity | Opening | Weighted /5 | Best first use case                                       |
+| ---: | ---------------------------------------- | --------------: | ---: | --: | ---------: | -------------: | ------: | ----------: | --------------------------------------------------------- |
+|    1 | Multi-staff beauty salons                |             4.5 |  4.5 | 3.5 |        3.5 |            4.5 |     3.0 |     **4.0** | WhatsApp booking, rescheduling and reminders across staff |
+|    2 | Private dental/specialist practices      |             4.0 |  4.5 | 4.5 |        2.5 |            3.0 |     2.5 |     **3.7** | Confirmation/reminder plus filling cancelled slots        |
+|    3 | Wellness clinics/spas                    |             3.0 |  4.0 | 4.0 |        3.0 |            3.5 |     3.0 |     **3.5** | Recurring-session scheduling and reminders                |
+|    4 | Veterinary clinics (other local service) |             3.5 |  4.0 | 3.5 |        3.0 |            3.5 |     3.5 |     **3.5** | Vaccination/follow-up reminders and appointment booking   |
+|    5 | Premium barbershops                      |             3.0 |  3.5 | 2.5 |        3.5 |            4.5 |     3.0 |     **3.4** | Choose barber and book a timed service                    |
+|    6 | Reservation-led restaurants              |             4.0 |  3.5 | 3.5 |        2.5 |            2.0 |     1.5 |     **2.9** | Confirm party size/time and reduce no-shows               |
 
 ### 1. Beauty salons
 
@@ -184,17 +184,17 @@ Target funnel hypothesis: 50 accounts → 20 owner conversations → 8 audits �
 
 ## Risks and rapid validation
 
-| Risk | Why it could kill the MVP | Fast validation (before substantial build) |
-|---|---|---|
-| Pain is occasional, not costly | Owners will not pay monthly | Audit 20 salons; obtain four weeks of thread/calendar outcomes from 5; calculate lost inquiries and labor |
-| Customers prefer a human | Automation lowers trust/conversion | Wizard-of-Oz test on 100 opted-in inbound threads; compare completion and handoff rates |
-| Staff do not maintain availability | Assistant creates bad bookings | Two-week shared-calendar pilot; require >98% valid-slot accuracy before automation |
-| Existing software is “good enough” | No differentiation | Interview 10 AgendaPro/Fresha users and 10 non-users; test whether WhatsApp setup/service beats switching |
-| WTP below unit economics | Support and messaging costs consume revenue | Collect five paid deposits; track setup/support minutes and per-conversation cost |
-| WhatsApp platform dependency | Template/account/policy changes disrupt service | Use official WhatsApp Business Platform/provider, preserve export, and design a manual fallback |
-| Privacy/consent failure | Regulatory, reputational and contractual risk | Obtain Peruvian counsel review; minimize fields; retention policy; owner/customer opt-out; access/audit controls |
-| Voice calls trigger distrust/legal risk | Low answer rates and consent exposure | Do not put voice in MVP; later test inbound call overflow or explicitly requested callbacks only |
-| AI invents availability/prices | One mistake damages owner trust | Deterministic catalog/calendar actions, constrained responses, human fallback and replay testing |
+| Risk                                    | Why it could kill the MVP                       | Fast validation (before substantial build)                                                                       |
+| --------------------------------------- | ----------------------------------------------- | ---------------------------------------------------------------------------------------------------------------- |
+| Pain is occasional, not costly          | Owners will not pay monthly                     | Audit 20 salons; obtain four weeks of thread/calendar outcomes from 5; calculate lost inquiries and labor        |
+| Customers prefer a human                | Automation lowers trust/conversion              | Wizard-of-Oz test on 100 opted-in inbound threads; compare completion and handoff rates                          |
+| Staff do not maintain availability      | Assistant creates bad bookings                  | Two-week shared-calendar pilot; require >98% valid-slot accuracy before automation                               |
+| Existing software is “good enough”      | No differentiation                              | Interview 10 AgendaPro/Fresha users and 10 non-users; test whether WhatsApp setup/service beats switching        |
+| WTP below unit economics                | Support and messaging costs consume revenue     | Collect five paid deposits; track setup/support minutes and per-conversation cost                                |
+| WhatsApp platform dependency            | Template/account/policy changes disrupt service | Use official WhatsApp Business Platform/provider, preserve export, and design a manual fallback                  |
+| Privacy/consent failure                 | Regulatory, reputational and contractual risk   | Obtain Peruvian counsel review; minimize fields; retention policy; owner/customer opt-out; access/audit controls |
+| Voice calls trigger distrust/legal risk | Low answer rates and consent exposure           | Do not put voice in MVP; later test inbound call overflow or explicitly requested callbacks only                 |
+| AI invents availability/prices          | One mistake damages owner trust                 | Deterministic catalog/calendar actions, constrained responses, human fallback and replay testing                 |
 
 ## Legal/channel constraint
 
