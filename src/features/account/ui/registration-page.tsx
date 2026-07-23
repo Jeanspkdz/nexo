@@ -1,8 +1,10 @@
 "use client";
 
+import { zodResolver } from "@hookform/resolvers/zod";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useState, type FormEvent } from "react";
+import { useState } from "react";
+import { Controller, useForm } from "react-hook-form";
 import {
   createAccount,
   destinationFor,
@@ -11,7 +13,18 @@ import {
   type AccountRole,
   type LocalAccount,
 } from "@/features/account/infrastructure/browser-account-store";
+import { cn } from "@/shared/lib/cn";
+import {
+  Button,
+  Checkbox,
+  Field,
+  FieldError,
+  FieldLabel,
+  Input,
+  buttonVariants,
+} from "@/shared/ui";
 import { AuthShell } from "./auth-shell";
+import { registrationSchema, type RegistrationValues } from "./registration-schema";
 
 const registrationCopy = {
   client: {
@@ -25,44 +38,46 @@ const registrationCopy = {
   },
 } satisfies Record<AccountRole, { title: string; description: string }>;
 
+const selectClassName =
+  "min-h-12 w-full rounded-nexo-control border border-nexo-line bg-white px-[0.8rem] py-[0.7rem] text-nexo-plum-deep outline-none focus-visible:border-nexo-plum focus-visible:ring-3 focus-visible:ring-nexo-coral focus-visible:ring-offset-3 aria-invalid:border-[#9b423b]";
+
 export function RegistrationPage({ role }: { role: AccountRole }) {
   const router = useRouter();
   const [showPassword, setShowPassword] = useState(false);
-  const [error, setError] = useState("");
   const { title, description } = registrationCopy[role];
+  const {
+    register,
+    handleSubmit,
+    control,
+    setError,
+    formState: { errors, isSubmitting },
+  } = useForm<RegistrationValues>({
+    resolver: zodResolver(registrationSchema(role)),
+    defaultValues: {
+      firstName: "",
+      lastName: "",
+      email: "",
+      phone: "",
+      password: "",
+      confirmPassword: "",
+      companyName: "",
+      category: "",
+      location: role === "company" ? "Lima" : "",
+      coverage: "",
+      commercialPhone: "",
+      description: "",
+      terms: false,
+    },
+  });
 
-  function submit(event: FormEvent<HTMLFormElement>) {
-    event.preventDefault();
-    const data = new FormData(event.currentTarget);
-    const email = String(data.get("email")).trim().toLowerCase();
-    const password = String(data.get("password"));
-    const requiredFields = ["firstName", "lastName", "email", "password", "confirmPassword"];
-    if (role === "company") {
-      requiredFields.push(
-        "phone",
-        "companyName",
-        "category",
-        "location",
-        "coverage",
-        "commercialPhone",
-        "description",
-      );
+  function submit(values: RegistrationValues) {
+    const email = values.email.trim().toLowerCase();
+    if (emailExists(email)) {
+      setError("root", { message: "Ya existe una cuenta local con ese correo." });
+      return;
     }
-    if (requiredFields.some((field) => !String(data.get(field) ?? "").trim())) {
-      return setError("Completa todos los campos obligatorios para crear la cuenta.");
-    }
-    if (!/^\S+@\S+\.\S+$/.test(email)) {
-      return setError("Escribe un correo válido. Ejemplo: nombre@empresa.com");
-    }
-    if (password.length < 8) return setError("La contraseña debe tener al menos 8 caracteres.");
-    if (password !== String(data.get("confirmPassword")))
-      return setError("Las contraseñas no coinciden.");
-    if (emailExists(email)) return setError("Ya existe una cuenta local con ese correo.");
-    if (data.get("terms") !== "on")
-      return setError("Debes aceptar los términos y la política de privacidad.");
-    const companyName = String(data.get("companyName"));
     const companyId =
-      companyName
+      values.companyName
         .toLowerCase()
         .normalize("NFD")
         .replace(/[\u0300-\u036f]/g, "")
@@ -71,21 +86,21 @@ export function RegistrationPage({ role }: { role: AccountRole }) {
     const account: LocalAccount = {
       id: `${role}-${Date.now()}`,
       role,
-      firstName: String(data.get("firstName")),
-      lastName: String(data.get("lastName")),
+      firstName: values.firstName,
+      lastName: values.lastName,
       email,
-      password,
-      phone: String(data.get("phone") ?? ""),
+      password: values.password,
+      phone: values.phone,
       company:
         role === "company"
           ? {
               id: companyId,
-              name: companyName,
-              category: String(data.get("category")) as "salones" | "catering" | "foto",
-              location: String(data.get("location")),
-              coverage: String(data.get("coverage")),
-              description: String(data.get("description")),
-              commercialPhone: String(data.get("commercialPhone")),
+              name: values.companyName,
+              category: values.category as "salones" | "catering" | "foto",
+              location: values.location,
+              coverage: values.coverage,
+              description: values.description,
+              commercialPhone: values.commercialPhone,
             }
           : undefined,
     };
@@ -94,76 +109,137 @@ export function RegistrationPage({ role }: { role: AccountRole }) {
     router.push(destinationFor(account));
   }
 
+  const firstError =
+    errors.root?.message ??
+    Object.values(errors).find((error) => error && "message" in error && error.message)?.message;
+
   return (
     <AuthShell action="login">
-      <section className="registration-section">
-        <div className="registration-heading">
-          <Link href="/registro">← Cambiar tipo de cuenta</Link>
-          <span>{role === "client" ? "Cuenta de cliente" : "Cuenta de empresa"}</span>
-          <h1>{title}</h1>
-          <p>{description}</p>
+      <section className="mx-auto w-full max-w-[900px]">
+        <div className="mb-10 grid justify-items-start gap-y-2">
+          <Link
+            className="inline-flex min-h-11 items-center font-bold text-nexo-plum no-underline"
+            href="/registro"
+          >
+            ← Cambiar tipo de cuenta
+          </Link>
+          <span className="text-[0.85rem] font-bold text-nexo-plum">
+            {role === "client" ? "Cuenta de cliente" : "Cuenta de empresa"}
+          </span>
+          <h1 className="my-1 font-nexo-serif text-[3.2rem] leading-[1.03] font-normal tracking-[-0.035em] text-nexo-plum text-balance max-[760px]:text-[2.5rem]">
+            {title}
+          </h1>
+          <p className="max-w-[60ch] text-nexo-muted">{description}</p>
         </div>
-        <form className="registration-form" onSubmit={submit} noValidate>
-          <fieldset>
-            <legend>{role === "company" ? "Tu acceso" : "Datos de acceso"}</legend>
-            <div className="auth-form-grid">
-              <label>
-                Nombre
-                <input name="firstName" autoComplete="given-name" required />
-              </label>
-              <label>
-                Apellidos
-                <input name="lastName" autoComplete="family-name" required />
-              </label>
-              <label className="full">
-                Correo electrónico
-                <input name="email" type="email" autoComplete="email" required />
-              </label>
+        <form className="grid gap-4" onSubmit={handleSubmit(submit)} noValidate>
+          <fieldset className="m-0 rounded-nexo-surface border border-nexo-line p-7 max-[760px]:p-5">
+            <legend className="px-2 text-[1.2rem] font-bold">
+              {role === "company" ? "Tu acceso" : "Datos de acceso"}
+            </legend>
+            <div className="grid grid-cols-2 gap-4 max-[760px]:grid-cols-1">
+              <Field data-invalid={Boolean(errors.firstName)}>
+                <FieldLabel htmlFor={`${role}-firstName`}>Nombre</FieldLabel>
+                <Input
+                  id={`${role}-firstName`}
+                  autoComplete="given-name"
+                  aria-invalid={Boolean(errors.firstName)}
+                  {...register("firstName")}
+                />
+              </Field>
+              <Field data-invalid={Boolean(errors.lastName)}>
+                <FieldLabel htmlFor={`${role}-lastName`}>Apellidos</FieldLabel>
+                <Input
+                  id={`${role}-lastName`}
+                  autoComplete="family-name"
+                  aria-invalid={Boolean(errors.lastName)}
+                  {...register("lastName")}
+                />
+              </Field>
+              <Field
+                className="col-span-full max-[760px]:col-span-1"
+                data-invalid={Boolean(errors.email)}
+              >
+                <FieldLabel htmlFor={`${role}-email`}>Correo electrónico</FieldLabel>
+                <Input
+                  id={`${role}-email`}
+                  type="email"
+                  autoComplete="email"
+                  aria-invalid={Boolean(errors.email)}
+                  {...register("email")}
+                />
+              </Field>
               {role === "company" && (
-                <label className="full">
-                  Teléfono del responsable
-                  <input name="phone" type="tel" autoComplete="tel" required />
-                </label>
-              )}
-              <label>
-                Contraseña
-                <span className="password-field">
-                  <input
-                    name="password"
-                    type={showPassword ? "text" : "password"}
-                    minLength={8}
-                    autoComplete="new-password"
-                    required
+                <Field
+                  className="col-span-full max-[760px]:col-span-1"
+                  data-invalid={Boolean(errors.phone)}
+                >
+                  <FieldLabel htmlFor="company-phone">Teléfono del responsable</FieldLabel>
+                  <Input
+                    id="company-phone"
+                    type="tel"
+                    autoComplete="tel"
+                    aria-invalid={Boolean(errors.phone)}
+                    {...register("phone")}
                   />
-                  <button type="button" onClick={() => setShowPassword((value) => !value)}>
+                </Field>
+              )}
+              <Field data-invalid={Boolean(errors.password)}>
+                <FieldLabel htmlFor={`${role}-password`}>Contraseña</FieldLabel>
+                <span className="relative block">
+                  <Input
+                    id={`${role}-password`}
+                    type={showPassword ? "text" : "password"}
+                    autoComplete="new-password"
+                    className="pr-[5.5rem]"
+                    aria-invalid={Boolean(errors.password)}
+                    {...register("password")}
+                  />
+                  <button
+                    className="absolute top-1 right-[0.35rem] min-h-10 border-0 bg-transparent px-[0.6rem] text-[0.8rem] font-bold text-nexo-plum"
+                    type="button"
+                    onClick={() => setShowPassword((value) => !value)}
+                  >
                     {showPassword ? "Ocultar" : "Mostrar"}
                   </button>
                 </span>
-                <small>Mínimo 8 caracteres.</small>
-              </label>
-              <label>
-                Confirmar contraseña
-                <input
-                  name="confirmPassword"
+                <small className="font-normal text-nexo-muted">Mínimo 8 caracteres.</small>
+              </Field>
+              <Field data-invalid={Boolean(errors.confirmPassword)}>
+                <FieldLabel htmlFor={`${role}-confirmPassword`}>Confirmar contraseña</FieldLabel>
+                <Input
+                  id={`${role}-confirmPassword`}
                   type={showPassword ? "text" : "password"}
-                  minLength={8}
                   autoComplete="new-password"
-                  required
+                  aria-invalid={Boolean(errors.confirmPassword)}
+                  {...register("confirmPassword")}
                 />
-              </label>
+              </Field>
             </div>
           </fieldset>
+
           {role === "company" && (
-            <fieldset>
-              <legend>Tu empresa</legend>
-              <div className="auth-form-grid">
-                <label className="full">
-                  Nombre comercial
-                  <input name="companyName" required />
-                </label>
-                <label>
-                  Categoría principal
-                  <select name="category" defaultValue="" required>
+            <fieldset className="m-0 rounded-nexo-surface border border-nexo-line p-7 max-[760px]:p-5">
+              <legend className="px-2 text-[1.2rem] font-bold">Tu empresa</legend>
+              <div className="grid grid-cols-2 gap-4 max-[760px]:grid-cols-1">
+                <Field
+                  className="col-span-full max-[760px]:col-span-1"
+                  data-invalid={Boolean(errors.companyName)}
+                >
+                  <FieldLabel htmlFor="company-name">Nombre comercial</FieldLabel>
+                  <Input
+                    id="company-name"
+                    aria-invalid={Boolean(errors.companyName)}
+                    {...register("companyName")}
+                  />
+                </Field>
+                <Field data-invalid={Boolean(errors.category)}>
+                  <FieldLabel htmlFor="company-category">Categoría principal</FieldLabel>
+                  <select
+                    id="company-category"
+                    className={selectClassName}
+                    aria-invalid={Boolean(errors.category)}
+                    {...register("category")}
+                  >
                     <option value="" disabled>
                       Selecciona una categoría
                     </option>
@@ -171,45 +247,89 @@ export function RegistrationPage({ role }: { role: AccountRole }) {
                     <option value="catering">Catering</option>
                     <option value="foto">Fotografía y video</option>
                   </select>
-                </label>
-                <label>
-                  Ciudad o ubicación principal
-                  <input name="location" defaultValue="Lima" required />
-                </label>
-                <label>
-                  Cobertura
-                  <input name="coverage" placeholder="Ej. Lima Metropolitana" required />
-                </label>
-                <label>
-                  Teléfono o WhatsApp comercial
-                  <input name="commercialPhone" type="tel" required />
-                </label>
-                <label className="full">
-                  Descripción breve
-                  <textarea name="description" maxLength={240} required />
-                </label>
+                </Field>
+                <Field data-invalid={Boolean(errors.location)}>
+                  <FieldLabel htmlFor="company-location">Ciudad o ubicación principal</FieldLabel>
+                  <Input
+                    id="company-location"
+                    aria-invalid={Boolean(errors.location)}
+                    {...register("location")}
+                  />
+                </Field>
+                <Field data-invalid={Boolean(errors.coverage)}>
+                  <FieldLabel htmlFor="company-coverage">Cobertura</FieldLabel>
+                  <Input
+                    id="company-coverage"
+                    placeholder="Ej. Lima Metropolitana"
+                    aria-invalid={Boolean(errors.coverage)}
+                    {...register("coverage")}
+                  />
+                </Field>
+                <Field data-invalid={Boolean(errors.commercialPhone)}>
+                  <FieldLabel htmlFor="company-commercial-phone">
+                    Teléfono o WhatsApp comercial
+                  </FieldLabel>
+                  <Input
+                    id="company-commercial-phone"
+                    type="tel"
+                    aria-invalid={Boolean(errors.commercialPhone)}
+                    {...register("commercialPhone")}
+                  />
+                </Field>
+                <Field
+                  className="col-span-full max-[760px]:col-span-1"
+                  data-invalid={Boolean(errors.description)}
+                >
+                  <FieldLabel htmlFor="company-description">Descripción breve</FieldLabel>
+                  <textarea
+                    id="company-description"
+                    className={cn(selectClassName, "min-h-28 resize-y")}
+                    maxLength={240}
+                    aria-invalid={Boolean(errors.description)}
+                    {...register("description")}
+                  />
+                </Field>
               </div>
-              <p className="fieldset-note">
+              <p className="mt-4 mb-0 text-[0.85rem] font-normal text-nexo-muted">
                 Agregarás servicios, precios y portafolio después desde el panel.
               </p>
             </fieldset>
           )}
-          <label className="auth-check terms-check">
-            <input name="terms" type="checkbox" />
-            Acepto los términos y la política de privacidad del prototipo.
-          </label>
-          {error && (
-            <p className="form-error" role="alert">
-              {error}
-            </p>
-          )}
-          <div className="registration-actions">
-            <Link className="secondary" href="/">
+
+          <Controller
+            control={control}
+            name="terms"
+            render={({ field }) => (
+              <Field
+                className="mt-2 flex min-h-11 grid-cols-[auto_1fr] items-center gap-[0.65rem] font-medium text-nexo-muted"
+                data-invalid={Boolean(errors.terms)}
+              >
+                <Checkbox
+                  id={`${role}-terms`}
+                  checked={field.value}
+                  onCheckedChange={(checked) => field.onChange(checked === true)}
+                  aria-invalid={Boolean(errors.terms)}
+                />
+                <FieldLabel className="font-medium text-nexo-muted" htmlFor={`${role}-terms`}>
+                  Acepto los términos y la política de privacidad del prototipo.
+                </FieldLabel>
+              </Field>
+            )}
+          />
+          {firstError && <FieldError>{String(firstError)}</FieldError>}
+          <div className="flex justify-end gap-3 max-[760px]:flex-col">
+            <Link
+              className={cn(
+                buttonVariants({ variant: "secondary" }),
+                "no-underline max-[760px]:w-full",
+              )}
+              href="/"
+            >
               Volver al inicio
             </Link>
-            <button className="primary" type="submit">
+            <Button className="max-[760px]:w-full" type="submit" disabled={isSubmitting}>
               {role === "client" ? "Crear cuenta de cliente" : "Crear cuenta de empresa"}
-            </button>
+            </Button>
           </div>
         </form>
       </section>

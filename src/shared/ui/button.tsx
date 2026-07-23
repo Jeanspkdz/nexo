@@ -3,7 +3,7 @@ import type { ComponentProps } from "react";
 import { cn } from "@/shared/lib/cn";
 
 export const buttonVariants = cva(
-  "inline-flex min-h-12 items-center justify-center rounded-nexo-control px-5 font-nexo-sans text-sm font-semibold transition-colors focus-visible:outline-3 focus-visible:outline-offset-3 focus-visible:outline-nexo-coral disabled:pointer-events-none disabled:opacity-50",
+  "inline-flex min-h-12 items-center justify-center rounded-nexo-control px-[1.15rem] py-3 font-nexo-sans text-base leading-[1.15] font-[650] transition-colors focus-visible:outline-3 focus-visible:outline-offset-3 focus-visible:outline-nexo-coral disabled:pointer-events-none disabled:opacity-50",
   {
     variants: {
       variant: {
@@ -13,8 +13,8 @@ export const buttonVariants = cva(
         ghost: "bg-transparent text-nexo-plum hover:bg-nexo-surface",
       },
       size: {
-        default: "min-h-12 px-5",
-        compact: "min-h-11 px-3",
+        default: "min-h-12",
+        compact: "min-h-11",
       },
     },
     defaultVariants: {
