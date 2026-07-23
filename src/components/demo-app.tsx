@@ -2,9 +2,27 @@
 
 import Image from "next/image";
 import { usePathname, useRouter } from "next/navigation";
-import { useEffect, useState, type FormEvent } from "react";
+import { useEffect, useState, type FormEvent, type ReactNode } from "react";
+import { SiteHeader } from "@/components/site-header";
+import type { ProviderCategoryId } from "@/domain/marketplace";
+import { clearSession, destinationFor, readSession, type LocalAccount } from "@/lib/auth-storage";
+import {
+  readCustomerEvents,
+  readSelectedCustomerEventId,
+  saveCustomerEvent,
+  selectCustomerEvent,
+  type CustomerEvent,
+} from "@/lib/customer-events";
+import { readQuotationRequests, saveQuotationRequest } from "@/lib/quotation-requests";
+import { acceptDetailedQuotation, readDetailedQuotations, saveDetailedQuotation } from "@/lib/quotations";
+import { readProviderContracts, saveProviderContract } from "@/lib/provider-contracts";
+import {
+  providerCategories as mockCategories,
+  providers as mockProviders,
+  providerServices as mockProviderServices,
+} from "@/lib/mock-catalog";
 
-type Category = "salones" | "catering" | "foto";
+type Category = ProviderCategoryId;
 type Role = "client" | "company";
 type Screen =
   | "home"
@@ -17,7 +35,7 @@ type Screen =
   | "myevent"
   | "company";
 
-const categories = [
+const legacyCategories = [
   {
     id: "salones",
     name: "Locales o salones",
@@ -76,7 +94,7 @@ const categories = [
   },
 ] as const;
 
-const providers = [
+const legacyProviders = [
   {
     id: "jardines",
     category: "salones" as Category,
@@ -249,6 +267,35 @@ const demoEvent = {
   accessibility: "Acceso sin escalones y baño accesible",
   notes: "Celebración familiar. Se requiere espacio tranquilo para adultos mayores.",
 };
+// Discovery screens use the normalized mock catalog; legacy fixtures remain temporarily
+// only to avoid changing their established presentation while the remaining demo flows migrate.
+const categories = mockCategories;
+const providers = mockProviderServices.map((service) => {
+  const provider = mockProviders.find((candidate) => candidate.id === service.providerId)!;
+  return {
+    id: provider.id,
+    serviceId: service.id,
+    category: service.categoryId,
+    company: provider.name,
+    service: service.name,
+    location: provider.location,
+    coverage: provider.coverage,
+    rating: provider.rating,
+    reviews: provider.reviewCount,
+    price: service.startingPrice,
+    unit: service.priceUnit,
+    minimum: service.minimum,
+    image: provider.image,
+    sponsored: provider.sponsored,
+    capacity: service.capacity,
+    lead: provider.description,
+    package: service.packageName,
+    included: service.included,
+    excluded: service.excluded,
+    extras: service.extras,
+    restrictions: service.restrictions,
+  };
+});
 const money = (value: number) => `S/ ${value.toLocaleString("es-PE")}`;
 const catName = (id: Category) => categories.find((c) => c.id === id)?.name ?? id;
 
@@ -257,7 +304,9 @@ export function DemoApp() {
   const pathname = usePathname();
   const segments = pathname.split("/").filter(Boolean);
   const role: Role = segments[0] === "panel" ? "company" : "client";
-  const companyId = role === "company" ? (segments[1] ?? "jardines") : "jardines";
+  const [session, setSession] = useState<LocalAccount | null>(null);
+  const companyId =
+    role === "company" ? (session?.company?.id ?? segments[1] ?? "jardines") : "jardines";
   const category = (
     ["resultados", "comparar"].includes(segments[0]) ? segments[1] : "salones"
   ) as Category;
@@ -290,6 +339,20 @@ export function DemoApp() {
   const [eventSaved, setEventSaved] = useState(false);
 
   useEffect(() => {
+    const activeSession = readSession();
+    if (!activeSession) {
+      router.replace("/login");
+      return;
+    }
+    setSession(activeSession);
+    if (
+      (role === "client" && activeSession.role !== "client") ||
+      (role === "company" && activeSession.role !== "company")
+    ) {
+      router.replace(destinationFor(activeSession));
+    }
+  }, [role, router]);
+  useEffect(() => {
     const saved = localStorage.getItem("nexo-v02-state");
     if (saved) {
       try {
@@ -302,7 +365,8 @@ export function DemoApp() {
     localStorage.setItem("nexo-v02-state", JSON.stringify({ eventSaved }));
   }, [eventSaved]);
   const selected = providers.find((p) => p.id === selectedId) ?? providers[0];
-  const company = providers.find((p) => p.id === companyId) ?? providers[0];
+  const matchedCompany = providers.find((p) => p.id === companyId);
+  const company = matchedCompany ?? providers[0];
   useEffect(() => {
     const requested = new URLSearchParams(window.location.search).get("servicios");
     if (requested) setCompare(requested.split(",").filter(Boolean));
@@ -355,82 +419,101 @@ export function DemoApp() {
           ? [...current, id]
           : current,
     );
-  const switchRole = (next: Role) => {
-    router.push(next === "client" ? "/explorar" : `/panel/${companyId}`);
-  };
 
   return (
     <div className="market-app">
       <a className="skip-link" href="#main">
         Saltar al contenido
       </a>
-      <header className="market-header">
-        <button
-          className="wordmark"
-          onClick={() => router.push("/")}
-          aria-label="Ir al inicio de Nexo"
-        >
-          Nexo
-        </button>
-        <nav aria-label="Navegación principal">
-          {role === "client" ? (
+      {role === "client" && ["myevent", "home", "quotes"].includes(screen) ? (
+        <DashboardTopbar
+          session={session}
+          onLogout={() => {
+            clearSession();
+            setSession(null);
+            router.push("/");
+          }}
+        />
+      ) : (
+        <SiteHeader
+          className="market-header"
+          navigation={
             <>
-              <button className={screen === "home" ? "current" : ""} onClick={() => go("home")}>
-                Explorar
-              </button>
+              {role === "client" ? (
+                <>
+                  <button className={screen === "home" ? "current" : ""} onClick={() => go("home")}>
+                    Explorar
+                  </button>
+                  <button
+                    className={screen === "myevent" ? "current" : ""}
+                    onClick={() => go("myevent")}
+                  >
+                    Mi evento
+                  </button>
+                  <button
+                    className={screen === "quotes" ? "current" : ""}
+                    onClick={() => go("quotes")}
+                  >
+                    Cotizaciones
+                  </button>
+                </>
+              ) : (
+                <>
+                  <button className="current" onClick={() => router.push(`/panel/${companyId}`)}>
+                    Panel de empresa
+                  </button>
+                  <button onClick={() => router.push(`/panel/${companyId}/portafolio`)}>
+                    Portafolio
+                  </button>
+                </>
+              )}
+            </>
+          }
+          actions={
+            <div className="identity">
+              <span className="avatar">
+                {role === "client"
+                  ? `${session?.firstName?.[0] ?? "A"}${session?.lastName?.[0] ?? "S"}`
+                  : (session?.company?.name ?? company.company).slice(0, 2).toUpperCase()}
+              </span>
+              <span>
+                <strong>
+                  {role === "client"
+                    ? session
+                      ? `${session.firstName} ${session.lastName}`
+                      : "Cuenta cliente"
+                    : (session?.company?.name ?? company.company)}
+                </strong>
+                <small>
+                  {role === "client" ? "Cliente · cuenta local" : "Empresa · cuenta local"}
+                </small>
+              </span>
               <button
-                className={screen === "myevent" ? "current" : ""}
-                onClick={() => go("myevent")}
+                className="session-exit"
+                onClick={() => {
+                  clearSession();
+                  setSession(null);
+                  router.push("/");
+                }}
               >
-                Mi evento
+                Cerrar sesión
               </button>
-              <button className={screen === "quotes" ? "current" : ""} onClick={() => go("quotes")}>
-                Cotizaciones
-              </button>
-            </>
-          ) : (
-            <>
-              <button className="current" onClick={() => router.push(`/panel/${companyId}`)}>
-                Panel de empresa
-              </button>
-              <button onClick={() => router.push(`/panel/${companyId}/portafolio`)}>
-                Portafolio
-              </button>
-            </>
-          )}
-        </nav>
-        <div className="identity">
-          <span className="avatar">
-            {role === "client" ? "AS" : company.company.slice(0, 2).toUpperCase()}
-          </span>
-          <span>
-            <strong>{role === "client" ? "Andrea Salazar" : company.company}</strong>
-            <small>{role === "client" ? "Cliente demo" : "Empresa demo"}</small>
-          </span>
-          <select
-            aria-label="Cambiar cuenta demo"
-            value={role === "client" ? "client" : companyId}
-            onChange={(e) =>
-              e.target.value === "client"
-                ? switchRole("client")
-                : router.push(`/panel/${e.target.value}`)
-            }
-          >
-            <option value="client">Cuenta cliente</option>
-            {providers.map((p) => (
-              <option key={p.id} value={p.id}>
-                {p.company}
-              </option>
-            ))}
-          </select>
-        </div>
-      </header>
+            </div>
+          }
+        />
+      )}
       <main id="main">
-        {role === "company" ? (
+        {role === "company" && !matchedCompany && session?.company ? (
+          <NewCompanyPanel account={session} />
+        ) : role === "company" ? (
           <CompanyPanel company={company} notify={notify} navigate={(path) => router.push(path)} />
         ) : (
           <>
-            {screen === "home" && <Home openCategory={openCategory} openProvider={openProvider} />}
+            {screen === "home" && (
+              <ClientDashboardFrame active="none">
+                <Home openCategory={openCategory} openProvider={openProvider} />
+              </ClientDashboardFrame>
+            )}
             {screen === "results" && (
               <Results
                 category={category}
@@ -460,16 +543,19 @@ export function DemoApp() {
                 provider={selected}
                 eventSaved={eventSaved}
                 setEventSaved={setEventSaved}
+                userId={session?.id ?? "client-andrea"}
                 go={go}
                 notify={notify}
               />
             )}
             {screen === "quotes" && (
-              <Quotes
-                go={go}
-                code={segments[1]}
-                navigate={(code) => router.push(`/cotizaciones/${code}`)}
-              />
+              <ClientDashboardFrame active="quotes">
+                <Quotes
+                  go={go}
+                  code={segments[1]}
+                  navigate={(code) => router.push(`/cotizaciones/${code}`)}
+                />
+              </ClientDashboardFrame>
             )}
             {screen === "myevent" && <MyEvent notify={notify} />}
           </>
@@ -482,6 +568,11 @@ export function DemoApp() {
         <button
           onClick={() => {
             localStorage.removeItem("nexo-v02-state");
+            localStorage.removeItem("nexo-customer-events");
+            localStorage.removeItem("nexo-selected-customer-event");
+            localStorage.removeItem("nexo-quotation-requests");
+            localStorage.removeItem("nexo-detailed-quotations");
+            localStorage.removeItem("nexo-provider-contracts");
             setEventSaved(false);
             notify("Datos locales de la demo reiniciados");
           }}
@@ -498,6 +589,117 @@ export function DemoApp() {
   );
 }
 
+function DashboardIcon({
+  name,
+}: {
+  name: "home" | "calendar" | "chat" | "users" | "card" | "heart" | "bell";
+}) {
+  const paths = {
+    home: (
+      <path d="M3 10.8 12 3l9 7.8v8.7a1.5 1.5 0 0 1-1.5 1.5h-15A1.5 1.5 0 0 1 3 19.5v-8.7Zm6 10.2v-6h6v6" />
+    ),
+    calendar: (
+      <>
+        <rect x="3" y="5" width="18" height="16" rx="2" />
+        <path d="M7 3v4m10-4v4M3 10h18" />
+      </>
+    ),
+    chat: (
+      <path d="M20 15a4 4 0 0 1-4 4H8l-5 3v-7a4 4 0 0 1-1-2.7V8a4 4 0 0 1 4-4h10a4 4 0 0 1 4 4v7Z" />
+    ),
+    users: (
+      <>
+        <circle cx="9" cy="8" r="3" />
+        <path d="M3 20v-1.5A4.5 4.5 0 0 1 7.5 14h3A4.5 4.5 0 0 1 15 18.5V20m1-11a3 3 0 1 0 0-6m2 17v-1.5A4.5 4.5 0 0 0 15 14.2" />
+      </>
+    ),
+    card: (
+      <>
+        <rect x="2" y="5" width="20" height="14" rx="2" />
+        <path d="M2 10h20" />
+      </>
+    ),
+    heart: (
+      <path d="M20.8 8.7c0 5.8-8.8 10.5-8.8 10.5S3.2 14.5 3.2 8.7A4.5 4.5 0 0 1 12 7.3a4.5 4.5 0 0 1 8.8 1.4Z" />
+    ),
+    bell: (
+      <>
+        <path d="M18 9a6 6 0 0 0-12 0c0 7-3 7-3 9h18c0-2-3-2-3-9" />
+        <path d="M10 22h4" />
+      </>
+    ),
+  };
+  return (
+    <svg className="dashboard-icon" viewBox="0 0 24 24" aria-hidden="true">
+      {paths[name]}
+    </svg>
+  );
+}
+
+function DashboardTopbar({
+  session,
+  onLogout,
+}: {
+  session: LocalAccount | null;
+  onLogout: () => void;
+}) {
+  return (
+    <header className="dashboard-topbar">
+      <button className="dashboard-logo" onClick={() => window.location.assign("/mi-evento")}>
+        nexo
+      </button>
+      <div className="dashboard-breadcrumb">
+        <span>Mis eventos</span>
+        <b>›</b>
+        <strong>{demoEvent.name}</strong>
+      </div>
+      <div className="dashboard-top-actions">
+        <button aria-label="Notificaciones">
+          <DashboardIcon name="bell" />
+        </button>
+        <button aria-label="Mensajes">
+          <DashboardIcon name="chat" />
+        </button>
+        <span className="dashboard-avatar">{`${session?.firstName?.[0] ?? "A"}${session?.lastName?.[0] ?? "S"}`}</span>
+        <strong>{session ? `${session.firstName} ${session.lastName}` : "Cuenta cliente"}</strong>
+        <button onClick={onLogout}>Cerrar sesión</button>
+      </div>
+    </header>
+  );
+}
+
+function ClientDashboardFrame({
+  active,
+  children,
+}: {
+  active: "events" | "providers" | "quotes" | "none";
+  children: ReactNode;
+}) {
+  const nav = [
+    ["calendar", "Eventos", "/mi-evento", "events"],
+    ["users", "Proveedores", "/explorar", "providers"],
+    ["card", "Cotizaciones", "/cotizaciones", "quotes"],
+  ] as const;
+  return (
+    <div className="client-dashboard-shell">
+      <aside className="client-dashboard-nav" aria-label="Secciones del evento">
+        {nav.map(([icon, label, href, key]) => (
+          <button
+            key={label}
+            className={active === key ? "current" : ""}
+            aria-current={active === key ? "page" : undefined}
+            onClick={() => window.location.assign(href)}
+          >
+            <DashboardIcon name={icon} />
+            <span>{label}</span>
+          </button>
+        ))}
+      </aside>
+      <div className="client-dashboard-content">{children}</div>
+    </div>
+  );
+}
+
 function Home({
   openCategory,
   openProvider,
@@ -505,82 +707,24 @@ function Home({
   openCategory: (id: Category) => void;
   openProvider: (id: string) => void;
 }) {
-  const [eventType, setEventType] = useState("Cumpleaños");
   return (
     <>
-      <section className="home-hero">
+      <section className="explore-context" aria-labelledby="explore-title">
         <div>
-          <p className="demo-note">Prototipo navegable · Lima</p>
-          <h1>Todo tu evento, bien conectado.</h1>
+          <span>Evento activo</span>
+          <h1 id="explore-title">{demoEvent.name}</h1>
           <p>
-            Compara servicios, elige empresas distintas y conserva cada cotización, contrato y pago
-            en su lugar.
+            {demoEvent.type} · 19 de septiembre de 2026 · {demoEvent.guests} invitados ·{" "}
+            {demoEvent.location}
           </p>
         </div>
-        <form
-          onSubmit={(e) => {
-            e.preventDefault();
-            openCategory("salones");
-          }}
-          className="event-search"
-        >
-          <label>
-            ¿Qué estás organizando?
-            <select value={eventType} onChange={(e) => setEventType(e.target.value)}>
-              <option>Matrimonio</option>
-              <option>Cumpleaños</option>
-              <option>Quinceañero</option>
-              <option>Aniversario</option>
-              <option>Baby shower</option>
-              <option>Bautizo</option>
-              <option>Graduación</option>
-              <option>Evento corporativo</option>
-            </select>
-          </label>
-          <label>
-            ¿Dónde?
-            <input defaultValue="Lima" />
-          </label>
-          <button className="primary">Explorar servicios</button>
-        </form>
+        <button className="secondary">Editar evento</button>
       </section>
-      <section className="page-section sponsored" aria-labelledby="sponsored-title">
+      <section className="page-section explore-categories" aria-labelledby="category-title">
         <div className="section-heading">
           <div>
-            <span className="sponsor-label">Patrocinado</span>
-            <h2 id="sponsored-title">Propuesta destacada para {eventType.toLowerCase()}</h2>
-          </div>
-          <p>Ubicación promocional pagada. No modifica las reseñas ni el orden orgánico.</p>
-        </div>
-        <ProviderRow provider={providers[0]} openProvider={openProvider} />
-      </section>
-      <section className="page-section" aria-labelledby="organic-title">
-        <div className="section-heading">
-          <div>
-            <h2 id="organic-title">Empresas mejor valoradas para tu evento</h2>
-            <p>Orden orgánico según las reseñas demo del tipo de evento seleccionado.</p>
-          </div>
-        </div>
-        <div className="organic-list">
-          {providers
-            .filter((p) => !p.sponsored)
-            .slice(0, 3)
-            .map((p, i) => (
-              <div key={p.id}>
-                <span className="rank">{i + 1}</span>
-                <ProviderRow provider={p} openProvider={openProvider} />
-              </div>
-            ))}
-        </div>
-      </section>
-      <section className="page-section category-section" aria-labelledby="category-title">
-        <div className="section-heading">
-          <div>
-            <h2 id="category-title">Servicios para construir tu evento</h2>
-            <p>
-              Tres categorías están disponibles en esta entrega. Las demás muestran el alcance
-              futuro sin abrir recorridos incompletos.
-            </p>
+            <h2 id="category-title">¿Qué quieres resolver ahora?</h2>
+            <p>Explora proveedores para las decisiones pendientes de este evento.</p>
           </div>
         </div>
         <div className="category-grid">
@@ -598,7 +742,7 @@ function Home({
                 <p>{c.note}</p>
                 {c.active ? (
                   <button onClick={() => openCategory(c.id as Category)}>
-                    Ver opciones <span aria-hidden="true">→</span>
+                    Explorar opciones <span aria-hidden="true">→</span>
                   </button>
                 ) : (
                   <span className="coming-label">Próximamente</span>
@@ -606,6 +750,35 @@ function Home({
               </div>
             </article>
           ))}
+        </div>
+      </section>
+      <section className="page-section sponsored" aria-labelledby="sponsored-title">
+        <div className="section-heading">
+          <div>
+            <span className="sponsor-label">Patrocinado</span>
+            <h2 id="sponsored-title">Propuesta destacada para {demoEvent.type.toLowerCase()}</h2>
+          </div>
+          <p>Ubicación promocional pagada. No modifica las reseñas ni el orden orgánico.</p>
+        </div>
+        <ProviderRow provider={providers[0]} openProvider={openProvider} />
+      </section>
+      <section className="page-section" aria-labelledby="organic-title">
+        <div className="section-heading">
+          <div>
+            <h2 id="organic-title">Mejor valoradas para {demoEvent.type.toLowerCase()} en Lima</h2>
+            <p>Orden orgánico según las reseñas demo para este tipo de evento.</p>
+          </div>
+        </div>
+        <div className="organic-list">
+          {providers
+            .filter((p) => !p.sponsored)
+            .slice(0, 3)
+            .map((p, i) => (
+              <div key={p.serviceId}>
+                <span className="rank">{i + 1}</span>
+                <ProviderRow provider={p} openProvider={openProvider} />
+              </div>
+            ))}
         </div>
       </section>
     </>
@@ -658,7 +831,9 @@ function Results({
   openProvider: (id: string, target?: "profile" | "service") => void;
   go: (s: Screen) => void;
 }) {
-  const list = providers.filter((p) => p.category === category);
+  const list = providers
+    .filter((p) => p.category === category)
+    .sort((left, right) => Number(right.sponsored) - Number(left.sponsored));
   return (
     <div className="product-page">
       <div className="breadcrumbs">
@@ -698,7 +873,7 @@ function Results({
         </aside>
         <section className="result-list" aria-label="Resultados">
           {list.map((p, index) => (
-            <article className="result-card" key={p.id}>
+            <article className="result-card" key={p.serviceId}>
               <div className="result-image">
                 <Image
                   src={p.image}
@@ -1015,7 +1190,7 @@ function Compare({
           <span></span>
         </div>
         {list.map((p) => (
-          <div className="comparison-column" key={p.id}>
+          <div className="comparison-column" key={p.serviceId}>
             <strong>{p.company}</strong>
             <strong>{money(p.price)}</strong>
             <span>
@@ -1048,24 +1223,64 @@ function EventRequest({
   provider,
   eventSaved,
   setEventSaved,
+  userId,
   go,
   notify,
 }: {
   provider: (typeof providers)[number];
   eventSaved: boolean;
   setEventSaved: (v: boolean) => void;
+  userId: string;
   go: (s: Screen) => void;
   notify: (s: string) => void;
 }) {
   const [step, setStep] = useState(eventSaved ? 2 : 1);
-  const submit = (e: FormEvent) => {
+  const [savedEvents, setSavedEvents] = useState<CustomerEvent[]>([]);
+  const [selectedEventId, setSelectedEventId] = useState("");
+  useEffect(() => {
+    const events = readCustomerEvents(userId);
+    setSavedEvents(events);
+    setSelectedEventId(readSelectedCustomerEventId(userId) ?? events[0]?.id ?? "");
+  }, [userId]);
+  const submit = (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
+    const data = new FormData(e.currentTarget);
     if (step === 1) {
+      const eventType = String(data.get("eventType"));
+      const customerEvent: CustomerEvent = {
+        id: `event-${userId}-${Date.now()}`,
+        userId,
+        name: String(data.get("eventName")),
+        eventType: eventType === "Matrimonio" ? "wedding" : eventType === "Evento corporativo" ? "corporate" : "birthday",
+        date: String(data.get("eventDate")), time: String(data.get("eventTime")),
+        guestCount: Number(data.get("guestCount")), location: String(data.get("location")),
+        budget: Number(data.get("budget")) || undefined, accessibility: String(data.get("accessibility")) || undefined,
+        notes: String(data.get("notes")) || undefined,
+      };
+      saveCustomerEvent(customerEvent);
+      selectCustomerEvent(userId, customerEvent.id);
+      setSavedEvents((events) => [...events, customerEvent]);
+      setSelectedEventId(customerEvent.id);
       setEventSaved(true);
       setStep(2);
     } else {
-      notify(`Solicitud enviada a ${provider.company}`);
-      go("quotes");
+      const userEventId = selectedEventId || readSelectedCustomerEventId(userId);
+      if (!userEventId) {
+        notify("Primero guarda o selecciona un evento.");
+        setStep(1);
+        return;
+      }
+      const serviceIds = data.getAll("providerServiceIds").map(String);
+      saveQuotationRequest({
+        id: `request-${Date.now()}`,
+        userEventId,
+        providerId: provider.id,
+        providerServiceIds: serviceIds.length ? serviceIds : [provider.serviceId],
+        status: "pending",
+        createdAt: new Date().toISOString(),
+      });
+      notify(`Solicitud enviada a ${provider.company}. La empresa preparará la cotización.`);
+      go("myevent");
     }
   };
   return (
@@ -1097,10 +1312,30 @@ function EventRequest({
       <form className="request-form" onSubmit={submit}>
         {step === 1 ? (
           <>
+            {savedEvents.length > 0 && (
+              <label>
+                Usar un evento guardado
+                <select
+                  value={selectedEventId}
+                  onChange={(event) => setSelectedEventId(event.target.value)}
+                >
+                  {savedEvents.map((event) => (
+                    <option key={event.id} value={event.id}>{event.name} · {event.date}</option>
+                  ))}
+                </select>
+                <button
+                  type="button"
+                  className="secondary"
+                  onClick={() => { selectCustomerEvent(userId, selectedEventId); setEventSaved(true); setStep(2); }}
+                >
+                  Usar este evento
+                </button>
+              </label>
+            )}
             <div className="form-grid">
               <label>
                 Tipo de evento
-                <select defaultValue={demoEvent.type}>
+                <select name="eventType" defaultValue={demoEvent.type}>
                   <option>Cumpleaños</option>
                   <option>Matrimonio</option>
                   <option>Evento corporativo</option>
@@ -1108,41 +1343,52 @@ function EventRequest({
               </label>
               <label>
                 Nombre del evento
-                <input defaultValue={demoEvent.name} required />
+                <input name="eventName" defaultValue={demoEvent.name} required />
               </label>
               <label>
                 Fecha
-                <input type="date" defaultValue={demoEvent.date} required />
+                <input name="eventDate" type="date" defaultValue={demoEvent.date} required />
               </label>
               <label>
                 Horario o duración
-                <input defaultValue={demoEvent.time} required />
+                <input name="eventTime" defaultValue={demoEvent.time} required />
               </label>
               <label>
                 Número de invitados
-                <input type="number" defaultValue={demoEvent.guests} min="1" required />
+                <input name="guestCount" type="number" defaultValue={demoEvent.guests} min="1" required />
               </label>
               <label>
                 Ubicación
-                <input defaultValue={demoEvent.location} required />
+                <input name="location" defaultValue={demoEvent.location} required />
               </label>
               <label>
                 Presupuesto opcional
-                <input type="number" defaultValue={demoEvent.budget} />
+                <input name="budget" type="number" defaultValue={demoEvent.budget} />
               </label>
               <label>
                 Necesidades de accesibilidad
-                <input defaultValue={demoEvent.accessibility} />
+                <input name="accessibility" defaultValue={demoEvent.accessibility} />
               </label>
               <label className="full">
                 Notas generales
-                <textarea defaultValue={demoEvent.notes} />
+                <textarea name="notes" defaultValue={demoEvent.notes} />
               </label>
             </div>
             <button className="primary">Guardar y continuar</button>
           </>
         ) : (
           <>
+            {mockProviderServices.filter((service) => service.providerId === provider.id).length > 1 && (
+              <fieldset className="plain-section">
+                <legend>Servicios a cotizar</legend>
+                {mockProviderServices.filter((service) => service.providerId === provider.id).map((service) => (
+                  <label key={service.id} className="check">
+                    <input name="providerServiceIds" type="checkbox" value={service.id} defaultChecked={service.id === provider.serviceId} />
+                    {service.name}
+                  </label>
+                ))}
+              </fieldset>
+            )}
             <CategoryFields category={provider.category} />
             <div className="form-actions">
               <button type="button" className="secondary" onClick={() => setStep(1)}>
@@ -1361,11 +1607,25 @@ function Quotes({
   code?: string;
   navigate: (code: string) => void;
 }) {
+  const [acceptedCodes, setAcceptedCodes] = useState<string[]>([]);
+  const [localQuotes] = useState(() =>
+    readDetailedQuotations().map((quote) => {
+      const provider = providers.find((candidate) => candidate.id === quote.providerId) ?? providers[0];
+      return {
+        code: quote.id, quoteId: quote.id, userEventId: quote.userEventId, version: 1, provider, status: quote.status === "accepted" ? "Aceptada" : "Lista para decidir", issued: quote.issuedAt.slice(0, 10),
+        expires: quote.validUntil, items: quote.items.map((item) => [item.description, item.quantity, item.unit, item.unitPrice] as [string, number, string, number]),
+        discount: 0, transport: 0, total: quote.total, advance: Math.round(quote.total * 0.3),
+        schedule: [["Adelanto", "Al aceptar", Math.round(quote.total * 0.3)], ["Saldo", "Al confirmar", Math.round(quote.total * 0.7)]],
+      };
+    }),
+  );
+  const allQuotes: (typeof quotes)[number][] = [...quotes, ...(localQuotes as (typeof quotes)[number][])];
   const index = Math.max(
     0,
-    quotes.findIndex((quote) => quote.code === code),
+    allQuotes.findIndex((quote) => quote.code === code),
   );
-  const q = quotes[index];
+  const q = allQuotes[index];
+  const quoteForDocument = acceptedCodes.includes(q.code) ? { ...q, status: "Aceptada" } : q;
   return (
     <div className="product-page quote-page">
       <div className="results-heading">
@@ -1379,7 +1639,7 @@ function Quotes({
       </div>
       <div className="quote-layout">
         <aside className="quote-list">
-          {quotes.map((item, i) => (
+          {allQuotes.map((item, i) => (
             <button
               key={item.code}
               className={i === index ? "selected" : ""}
@@ -1398,13 +1658,29 @@ function Quotes({
             </button>
           ))}
         </aside>
-        <QuoteDocument quote={q} />
+        <QuoteDocument quote={quoteForDocument} onAccept={() => {
+          if (!("quoteId" in q)) {
+            setAcceptedCodes((codes) => [...codes, q.code]);
+            const now = Date.now();
+            saveProviderContract({ id: `contract-${now}`, userEventId: "event-demo", providerId: q.provider.id, acceptedQuotationId: q.code, agreedTotal: q.total, status: "active", paymentInstallments: [{ id: `installment-${now}`, label: "Pago total", amount: q.total, dueDate: "Al aceptar", status: "pending" }] });
+            return;
+          }
+          const accepted = acceptDetailedQuotation(q.quoteId as string);
+          if (!accepted) return;
+          const fullPayment = window.confirm("Aceptar con pago total? Selecciona Cancelar para dos cuotas acordadas.");
+          const now = Date.now();
+          const paymentInstallments = fullPayment
+            ? [{ id: `installment-${now}`, label: "Pago total", amount: accepted.total, dueDate: "Al aceptar", status: "pending" as const }]
+            : [{ id: `installment-${now}`, label: "Adelanto", amount: Math.round(accepted.total * 0.3), dueDate: "Al aceptar", status: "pending" as const }, { id: `installment-${now + 1}`, label: "Saldo", amount: Math.round(accepted.total * 0.7), dueDate: "Al confirmar", status: "pending" as const }];
+          saveProviderContract({ id: `contract-${now}`, userEventId: accepted.userEventId, providerId: accepted.providerId, acceptedQuotationId: accepted.id, agreedTotal: accepted.total, status: "active", paymentInstallments });
+          window.location.reload();
+        }} />
       </div>
     </div>
   );
 }
 
-function QuoteDocument({ quote: q }: { quote: (typeof quotes)[number] }) {
+function QuoteDocument({ quote: q, onAccept }: { quote: (typeof quotes)[number]; onAccept: () => void }) {
   return (
     <article className="quote-document">
       <header>
@@ -1500,7 +1776,7 @@ function QuoteDocument({ quote: q }: { quote: (typeof quotes)[number] }) {
       {q.status !== "Aceptada" && (
         <div className="document-actions">
           <button className="secondary">Rechazar propuesta</button>
-          <button className="primary">Aceptar cotización demo</button>
+          <button className="primary" onClick={onAccept}>Aceptar cotización demo</button>
         </div>
       )}
     </article>
@@ -1508,118 +1784,260 @@ function QuoteDocument({ quote: q }: { quote: (typeof quotes)[number] }) {
 }
 
 function MyEvent({ notify }: { notify: (s: string) => void }) {
+  const [localContracts] = useState(() => readProviderContracts());
+  const acceptedQuotes = quotes.filter((q) => q.status === "Aceptada");
+  const pendingQuotes = quotes.filter((q) => q.status === "Lista para decidir");
+  const nextPayment = acceptedQuotes[0];
   return (
-    <div className="product-page">
-      <header className="event-overview">
-        <div>
-          <span>Mi evento</span>
-          <h1>{demoEvent.name}</h1>
-          <p>
-            {demoEvent.type} · 19 de septiembre de 2026 · {demoEvent.guests} invitados ·{" "}
-            {demoEvent.location}
-          </p>
-        </div>
-        <div>
-          <span>Presupuesto de referencia</span>
-          <strong>{money(demoEvent.budget)}</strong>
-          <small>Contratado: {money(13370)}</small>
-        </div>
-      </header>
-      <div className="event-summary">
-        <div>
-          <span>2 contratos independientes</span>
-          <strong>{money(13370)}</strong>
-          <small>Total contratado</small>
-        </div>
-        <div>
-          <span>Pagado en adelantos</span>
-          <strong>{money(4011)}</strong>
-          <small>No incluye obligaciones futuras</small>
-        </div>
-        <div>
-          <span>Próxima fecha</span>
-          <strong>19 ago</strong>
-          <small>Dos cuotas separadas</small>
-        </div>
-      </div>
-      <div className="contract-list">
-        {quotes
-          .filter((q) => q.status === "Aceptada")
-          .map((q) => {
-            const paid = q.advance,
-              balance = q.total - paid;
-            return (
-              <article key={q.code}>
-                <header>
-                  <div className="profile-mark small">
-                    {q.provider.company.slice(0, 2).toUpperCase()}
-                  </div>
-                  <div>
-                    <span>Contrato de proveedor · {q.code}</span>
-                    <h2>{q.provider.company}</h2>
-                    <p>{q.provider.service}</p>
-                  </div>
-                  <span className="status-positive">Vigente · demo</span>
-                </header>
-                <div className="contract-numbers">
-                  <div>
-                    <span>Total</span>
-                    <strong>{money(q.total)}</strong>
-                  </div>
-                  <div>
-                    <span>Adelanto pagado</span>
-                    <strong>{money(paid)}</strong>
-                  </div>
-                  <div>
-                    <span>Saldo</span>
-                    <strong>{money(balance)}</strong>
-                  </div>
-                  <div>
-                    <span>Próxima cuota</span>
-                    <strong>{money(Number(q.schedule[1]?.[2] ?? 0))}</strong>
-                    <small>{q.schedule[1]?.[1]}</small>
-                  </div>
+    <div className="client-dashboard-shell">
+      <aside className="client-dashboard-nav" aria-label="Secciones del evento">
+        <button className="current" aria-current="page">
+          <DashboardIcon name="calendar" />
+          <span>Eventos</span>
+        </button>
+        <button onClick={() => window.location.assign("/explorar")}>
+          <DashboardIcon name="users" />
+          <span>Proveedores</span>
+        </button>
+        <button onClick={() => window.location.assign("/cotizaciones")}>
+          <DashboardIcon name="card" />
+          <span>Cotizaciones</span>
+        </button>
+      </aside>
+      <div className="product-page event-dashboard">
+        <header className="event-overview">
+          <div>
+            <div className="event-title-row">
+              <span className="event-calendar-icon">
+                <DashboardIcon name="calendar" />
+              </span>
+              <span>Evento</span>
+            </div>
+            <h1>{demoEvent.name}</h1>
+            <p>
+              {demoEvent.type} · 19 de septiembre de 2026 · {demoEvent.guests} invitados ·{" "}
+              {demoEvent.location}
+            </p>
+          </div>
+          <div>
+            <span>Presupuesto de referencia</span>
+            <strong>{money(demoEvent.budget)}</strong>
+            <small>Contratado: {money(13370)} · 74% del presupuesto</small>
+            <div className="budget-track">
+              <span />
+            </div>
+            <em>74% utilizado</em>
+          </div>
+          <button
+            className="primary event-explore-action"
+            onClick={() => window.location.assign("/explorar")}
+          >
+            Explorar servicios
+          </button>
+        </header>
+        <div className="event-workspace">
+          <div className="event-primary-column">
+            {localContracts.length > 0 && (
+              <section className="event-services">
+                <h2>Contratos recientes</h2>
+                {localContracts.map((contract) => {
+                  const provider = providers.find((candidate) => candidate.id === contract.providerId);
+                  return <article className="event-service-row" key={contract.id}>
+                    <span><strong>{provider?.company ?? "Proveedor"}</strong><small>{contract.paymentInstallments.length} cuota(s) · contrato activo</small></span>
+                    <b>{money(contract.agreedTotal)}</b>
+                  </article>;
+                })}
+              </section>
+            )}
+            <section className="next-decision" aria-labelledby="next-decision-title">
+              <div>
+                <span className="decision-kicker">Siguiente decisión</span>
+                <h2 id="next-decision-title">Revisa tus cotizaciones pendientes</h2>
+                <p>
+                  Tienes {pendingQuotes.length} propuestas listas para decidir antes de contratar.
+                </p>
+              </div>
+              <button className="primary" onClick={() => window.location.assign("/cotizaciones")}>
+                Revisar cotizaciones
+              </button>
+            </section>
+            <section className="event-services" aria-labelledby="event-services-title">
+              <div className="section-heading compact">
+                <div>
+                  <h2 id="event-services-title">Servicios del evento</h2>
+                  <p>Decide cada categoría por separado; puedes contratar empresas distintas.</p>
                 </div>
-                <div className="simulation-breakdown">
-                  <span>Simulación del próximo pago</span>
-                  <div>
-                    <span>
-                      Pago del cliente <strong>{money(Number(q.schedule[1]?.[2] ?? 0))}</strong>
-                    </span>
-                    <span>
-                      Comisión Nexo simulada{" "}
-                      <strong>
-                        - {money(Math.round(Number(q.schedule[1]?.[2] ?? 0) * 0.075))}
-                      </strong>
-                    </span>
-                    <span>
-                      Procesamiento simulado{" "}
-                      <strong>
-                        - {money(Math.round(Number(q.schedule[1]?.[2] ?? 0) * 0.029))}
-                      </strong>
-                    </span>
-                    <span>
-                      Neto estimado de empresa{" "}
-                      <strong>{money(Math.round(Number(q.schedule[1]?.[2] ?? 0) * 0.896))}</strong>
-                    </span>
-                  </div>
+              </div>
+              <button
+                className="event-service-row"
+                onClick={() => window.location.assign("/resultados/salones")}
+              >
+                <span>
+                  <strong>Locales o salones</strong>
+                  <small>Busca un espacio para 90 invitados</small>
+                </span>
+                <em>Pendiente</em>
+                <b aria-hidden="true">→</b>
+              </button>
+              <button
+                className="event-service-row"
+                onClick={() => window.location.assign("/cotizaciones")}
+              >
+                <span>
+                  <strong>Catering</strong>
+                  <small>{pendingQuotes.length} cotizaciones por revisar</small>
+                </span>
+                <em className="attention">Por decidir</em>
+                <b aria-hidden="true">→</b>
+              </button>
+              <button
+                className="event-service-row"
+                onClick={() => window.location.assign("/resultados/foto")}
+              >
+                <span>
+                  <strong>Fotografía y video</strong>
+                  <small>Explora coberturas y entregables</small>
+                </span>
+                <em>Pendiente</em>
+                <b aria-hidden="true">→</b>
+              </button>
+            </section>
+          </div>
+          <aside className="event-secondary-column" aria-label="Resumen del evento">
+            <section className="event-side-panel" aria-labelledby="quote-review-title">
+              <div className="side-panel-heading">
+                <h2 id="quote-review-title">Cotizaciones por revisar</h2>
+                <span>{pendingQuotes.length}</span>
+              </div>
+              {pendingQuotes.map((q) => (
+                <button
+                  key={q.code}
+                  className="side-panel-row"
+                  onClick={() => window.location.assign(`/cotizaciones/${q.code}`)}
+                >
+                  <span>
+                    <strong>{q.provider.company}</strong>
+                    <small>{q.provider.service}</small>
+                  </span>
+                  <b>{money(q.total)}</b>
+                  <i aria-hidden="true">→</i>
+                </button>
+              ))}
+            </section>
+            {nextPayment && (
+              <section className="event-side-panel next-payment" aria-labelledby="payment-title">
+                <div className="side-panel-heading">
+                  <h2 id="payment-title">Próximo pago</h2>
+                  <span>19 ago</span>
+                </div>
+                <p>
+                  <strong>{nextPayment.provider.company}</strong>
+                  <br />
+                  {nextPayment.provider.service}
+                </p>
+                <div>
+                  <span>Cuota pendiente</span>
+                  <strong>{money(Number(nextPayment.schedule[1]?.[2] ?? 0))}</strong>
                 </div>
                 <button
                   className="secondary"
                   onClick={() =>
-                    notify(`Pago de ${q.provider.company} registrado solo como simulación`)
+                    notify(
+                      `Pago de ${nextPayment.provider.company} registrado solo como simulación`,
+                    )
                   }
                 >
-                  Simular próxima cuota
+                  Simular pago
                 </button>
-              </article>
-            );
-          })}
+              </section>
+            )}
+          </aside>
+        </div>
+        <p className="legal-demo">
+          Nexo no procesa dinero en este prototipo. Cada obligación y calendario pertenece
+          únicamente al contrato de la empresa indicada.
+        </p>
       </div>
-      <p className="legal-demo">
-        Nexo no procesa dinero en este prototipo. Cada obligación y calendario pertenece únicamente
-        al contrato de la empresa indicada.
-      </p>
+    </div>
+  );
+}
+
+function NewCompanyPanel({ account }: { account: LocalAccount }) {
+  const company = account.company;
+  if (!company) return null;
+  return (
+    <div className="company-shell">
+      <aside className="company-nav">
+        <div>
+          <span>Área de empresa</span>
+          <strong>{company.name}</strong>
+        </div>
+        <button className="current">Resumen</button>
+        <button>Servicios y paquetes</button>
+        <button>Solicitudes</button>
+        <button>Cotizaciones</button>
+        <button>Contratos y pagos</button>
+        <button>Portafolio y reseñas</button>
+        <p>Cuenta local creada en este navegador.</p>
+      </aside>
+      <div className="company-content new-company-content">
+        <header>
+          <div>
+            <span>Panel de empresa</span>
+            <h1>Bienvenida, {company.name}</h1>
+            <p>
+              Tu cuenta está lista. Completa el primer servicio para aparecer en el marketplace.
+            </p>
+          </div>
+        </header>
+        <section className="company-metrics">
+          <article>
+            <span>Servicios publicados</span>
+            <strong>0</strong>
+            <small>Añade tu primer servicio</small>
+          </article>
+          <article>
+            <span>Solicitudes</span>
+            <strong>0</strong>
+            <small>Llegarán cuando publiques</small>
+          </article>
+          <article>
+            <span>Contratos</span>
+            <strong>0</strong>
+            <small>Sin contratos todavía</small>
+          </article>
+          <article>
+            <span>Neto estimado</span>
+            <strong>S/ 0</strong>
+            <small>Pagos simulados</small>
+          </article>
+        </section>
+        <section className="new-company-start">
+          <span className="choice-mark company">E</span>
+          <div>
+            <h2>Publica tu primer servicio</h2>
+            <p>
+              Define el paquete, precio desde, mínimos, incluidos y condiciones para que los
+              clientes puedan solicitar una cotización.
+            </p>
+          </div>
+          <button className="primary">Crear primer servicio</button>
+        </section>
+        <dl className="fact-grid company-profile-facts">
+          <div>
+            <dt>Categoría</dt>
+            <dd>{catName(company.category)}</dd>
+          </div>
+          <div>
+            <dt>Ubicación</dt>
+            <dd>{company.location}</dd>
+          </div>
+          <div>
+            <dt>Cobertura</dt>
+            <dd>{company.coverage}</dd>
+          </div>
+        </dl>
+      </div>
     </div>
   );
 }
@@ -1633,6 +2051,9 @@ function CompanyPanel({
   notify: (s: string) => void;
   navigate: (path: string) => void;
 }) {
+  const [localRequests, setLocalRequests] = useState(() => readQuotationRequests(company.id));
+  const [localContracts] = useState(() => readProviderContracts(company.id));
+  useEffect(() => { setLocalRequests(readQuotationRequests(company.id)); }, [company.id]);
   const ownQuote = quotes.find((q) => q.provider.id === company.id);
   const gross = ownQuote?.total ?? company.price,
     commission = Math.round(gross * 0.075),
@@ -1682,13 +2103,13 @@ function CompanyPanel({
         <section className="company-metrics">
           <article>
             <span>Solicitudes por atender</span>
-            <strong>2</strong>
-            <small>Una vence hoy</small>
+            <strong>{localRequests.length || 2}</strong>
+            <small>{localRequests.length ? "Nuevas solicitudes locales" : "Una vence hoy"}</small>
           </article>
           <article>
             <span>Bruto contratado</span>
-            <strong>{money(gross)}</strong>
-            <small>Contrato propio</small>
+            <strong>{money(localContracts.reduce((sum, contract) => sum + contract.agreedTotal, 0) || gross)}</strong>
+            <small>{localContracts.length ? `${localContracts.length} contrato(s) local(es)` : "Contrato propio"}</small>
           </article>
           <article>
             <span>Comisión simulada</span>
@@ -1758,6 +2179,19 @@ function CompanyPanel({
               <span>En revisión</span>
               <button className="text-link">Revisar</button>
             </div>
+            {localRequests.map((request) => (
+              <div key={request.id}>
+                <strong>
+                  Solicitud nueva<small>Evento {request.userEventId}</small>
+                </strong>
+                <span>{new Date(request.createdAt).toLocaleDateString("es-PE")}</span>
+                <span>{company.service}</span>
+                <span>Por cotizar</span>
+                <button className="text-link" onClick={() => navigate(`/panel/${company.id}/editor`)}>
+                  Preparar
+                </button>
+              </div>
+            ))}
           </div>
         </section>
         <section className="company-section quote-editor" id="company-3">
@@ -1813,7 +2247,18 @@ function CompanyPanel({
               </label>
               <button
                 className="primary"
-                onClick={() => notify("Cotización demo enviada a Andrea Salazar")}
+                onClick={() => {
+                  const request = localRequests[0];
+                  if (!request) { notify("No hay una solicitud local para cotizar."); return; }
+                  const quantity = company.category === "catering" ? 90 : 1;
+                  const total = company.category === "catering" ? company.price * quantity : company.price;
+                  saveDetailedQuotation({
+                    id: `quote-${Date.now()}`, requestId: request.id, userEventId: request.userEventId, providerId: company.id,
+                    status: "sent", issuedAt: new Date().toISOString(), validUntil: "2026-07-30",
+                    items: [{ description: company.package, quantity, unit: company.category === "catering" ? "persona" : "paquete", unitPrice: company.price }], total,
+                  });
+                  notify("Cotización demo enviada a Andrea Salazar");
+                }}
               >
                 Enviar cotización
               </button>

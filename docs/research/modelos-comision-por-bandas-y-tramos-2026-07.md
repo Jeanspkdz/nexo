@@ -33,16 +33,16 @@ Primero se observa el precio total. Después se elige una tasa y se aplica esa �
 Ejemplo **hipotético**, únicamente para explicar la fórmula de Nexo:
 
 | Precio total del evento | Tasa aplicable a todo el precio |
-|---:|---:|
-| Hasta S/5,000 | 10 % |
-| Más de S/5,000 | 6 % |
+| ----------------------: | ------------------------------: |
+|           Hasta S/5,000 |                            10 % |
+|          Más de S/5,000 |                             6 % |
 
 Los resultados serían:
 
-| Precio del evento | Cálculo | Comisión |
-|---:|---:|---:|
-| S/5,000 | S/5,000 × 10 % | S/500.00 |
-| S/5,001 | S/5,001 × 6 % | S/300.06 |
+| Precio del evento |        Cálculo | Comisión |
+| ----------------: | -------------: | -------: |
+|           S/5,000 | S/5,000 × 10 % | S/500.00 |
+|           S/5,001 |  S/5,001 × 6 % | S/300.06 |
 
 Aunque la venta aumentó S/1, la comisión disminuyó S/199.94. A esto se le puede llamar un **salto o efecto acantilado en el umbral**. Es una consecuencia matemática del ejemplo propuesto para Nexo, no una afirmación de que Amazon haya fijado sus bandas con ese propósito.
 
@@ -63,18 +63,18 @@ El precio se divide en porciones. Cada porción paga la tasa de su propio tramo;
 
 Ejemplo **hipotético**, usando los mismos límites y tasas:
 
-| Porción del precio | Tasa aplicable a esa porción |
-|---:|---:|
-| Primeros S/5,000 | 10 % |
-| Importe que exceda S/5,000 | 6 % |
+|         Porción del precio | Tasa aplicable a esa porción |
+| -------------------------: | ---------------------------: |
+|           Primeros S/5,000 |                         10 % |
+| Importe que exceda S/5,000 |                          6 % |
 
 Los resultados serían:
 
-| Precio del evento | Cálculo | Comisión | Tasa efectiva |
-|---:|---:|---:|---:|
-| S/5,000 | S/5,000 × 10 % | S/500.00 | 10 % |
-| S/5,001 | S/5,000 × 10 % + S/1 × 6 % | S/500.06 | ≈ 10 % |
-| S/10,000 | S/5,000 × 10 % + S/5,000 × 6 % | S/800.00 | 8 % |
+| Precio del evento |                        Cálculo | Comisión | Tasa efectiva |
+| ----------------: | -----------------------------: | -------: | ------------: |
+|           S/5,000 |                 S/5,000 × 10 % | S/500.00 |          10 % |
+|           S/5,001 |     S/5,000 × 10 % + S/1 × 6 % | S/500.06 |        ≈ 10 % |
+|          S/10,000 | S/5,000 × 10 % + S/5,000 × 6 % | S/800.00 |           8 % |
 
 Cuando el precio pasa de S/5,000 a S/5,001, solo el sol adicional paga 6 %. Por eso la comisión crece de S/500 a S/500.06, en vez de caer. Al aumentar el precio, la **tasa efectiva** —comisión total dividida entre precio total— disminuye gradualmente.
 
@@ -93,13 +93,13 @@ La misma lógica aparece en la explicación oficial británica del impuesto sobr
 
 ## Comparación directa para Nexo
 
-| Criterio | Tasa única por banda | Marginal por tramos |
-|---|---|---|
-| ¿Qué determina el precio total? | Una tasa para todo el importe | Cuánto importe cae en cada tramo |
-| Al superar un umbral | Todo el precio cambia de tasa | Solo el excedente cambia de tasa |
+| Criterio                                          | Tasa única por banda                          | Marginal por tramos                   |
+| ------------------------------------------------- | --------------------------------------------- | ------------------------------------- |
+| ¿Qué determina el precio total?                   | Una tasa para todo el importe                 | Cuánto importe cae en cada tramo      |
+| Al superar un umbral                              | Todo el precio cambia de tasa                 | Solo el excedente cambia de tasa      |
 | ¿Puede caer la comisión total al subir el precio? | Sí, si la nueva tasa es suficientemente menor | No, mientras las tasas sean positivas |
-| Facilidad de cálculo | Mayor | Menor; conviene mostrar desglose |
-| Reducción para eventos caros | Brusca | Gradual en la tasa efectiva |
+| Facilidad de cálculo                              | Mayor                                         | Menor; conviene mostrar desglose      |
+| Reducción para eventos caros                      | Brusca                                        | Gradual en la tasa efectiva           |
 
 ## Conclusión e inferencia para Nexo
 

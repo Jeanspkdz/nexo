@@ -1,5 +1,6 @@
 import Image from "next/image";
 import Link from "next/link";
+import { SiteHeader } from "@/components/site-header";
 
 const categories = [
   {
@@ -35,38 +36,42 @@ export function LandingPage() {
       <a className="skip-link" href="#contenido">
         Ir al contenido
       </a>
-      <header className="landing-header">
-        <Link className="landing-logo" href="/" aria-label="Nexo, inicio">
-          Nexo
-        </Link>
-        <nav className="desktop-nav" aria-label="Navegación principal">
-          <a href="#explorar">Explorar</a>
-          <a href="#como-funciona">Cómo funciona</a>
-          <a href="#empresas">Para empresas</a>
-        </nav>
-        <div className="header-actions">
-          <Link className="login-link" href="/explorar">
-            Iniciar sesión
-          </Link>
-          <a className="button button-coral button-small" href="#registro">
-            Crear cuenta
-          </a>
-        </div>
-        <details className="mobile-menu">
-          <summary aria-label="Abrir menú">
-            <span></span>
-            <span></span>
-            <span></span>
-          </summary>
-          <nav aria-label="Navegación móvil">
+      <SiteHeader
+        className="public-header"
+        navigation={
+          <div className="public-navigation">
             <a href="#explorar">Explorar</a>
             <a href="#como-funciona">Cómo funciona</a>
             <a href="#empresas">Para empresas</a>
-            <Link href="/explorar">Iniciar sesión</Link>
-            <a href="#registro">Crear cuenta</a>
-          </nav>
-        </details>
-      </header>
+          </div>
+        }
+        actions={
+          <>
+            <Link className="login-link" href="/login">
+              Iniciar sesión
+            </Link>
+            <Link className="button button-coral button-small" href="/registro">
+              Crear cuenta
+            </Link>
+          </>
+        }
+        mobileNavigation={
+          <details className="mobile-menu">
+            <summary aria-label="Abrir menú">
+              <span></span>
+              <span></span>
+              <span></span>
+            </summary>
+            <nav aria-label="Navegación móvil">
+              <a href="#explorar">Explorar</a>
+              <a href="#como-funciona">Cómo funciona</a>
+              <a href="#empresas">Para empresas</a>
+              <Link href="/login">Iniciar sesión</Link>
+              <Link href="/registro">Crear cuenta</Link>
+            </nav>
+          </details>
+        }
+      />
 
       <main id="contenido">
         <section className="landing-hero" aria-labelledby="hero-title">
@@ -77,7 +82,7 @@ export function LandingPage() {
               solo lugar.
             </p>
             <div className="hero-actions">
-              <Link className="button button-coral" href="/explorar">
+              <Link className="button button-coral" href="/registro/cliente">
                 Organizar mi evento
               </Link>
               <a className="text-link" href="#empresas">
@@ -289,7 +294,7 @@ export function LandingPage() {
               <li>Cotizaciones con precios y condiciones visibles</li>
               <li>Seguimiento de contratos y calendarios de pago</li>
             </ul>
-            <Link className="button provider-cta" href="/explorar">
+            <Link className="button provider-cta" href="/registro/empresa">
               Registrar mi empresa
             </Link>
           </div>
@@ -317,10 +322,10 @@ export function LandingPage() {
           <h2 id="cta-title">Tu evento empieza con una buena conexión</h2>
           <p>Elige cómo quieres comenzar. Podrás cambiar de recorrido cuando lo necesites.</p>
           <div className="hero-actions centered-actions">
-            <Link className="button button-coral" href="/explorar">
+            <Link className="button button-coral" href="/registro/cliente">
               Comenzar como cliente
             </Link>
-            <Link className="button button-light" href="/explorar">
+            <Link className="button button-light" href="/registro/empresa">
               Ofrecer mis servicios
             </Link>
           </div>

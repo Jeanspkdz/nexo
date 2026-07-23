@@ -1,5 +1,2 @@
-import { DemoApp } from "@/components/demo-app";
-
-export default function ServicePage() {
-  return <DemoApp />;
-}
+import { ServicePage } from "@/components/prototype-client";
+export default async function Page({ params }: { params: Promise<{ servicioId: string }> }) { return <ServicePage serviceId={(await params).servicioId} />; }

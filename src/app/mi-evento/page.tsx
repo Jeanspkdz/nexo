@@ -1,5 +1,2 @@
-import { DemoApp } from "@/components/demo-app";
-
-export default function MyEventPage() {
-  return <DemoApp />;
-}
+import { redirect } from "next/navigation";
+export default function Page() { redirect("/mis-eventos"); }

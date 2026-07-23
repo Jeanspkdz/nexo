@@ -1,5 +1,2 @@
-import { DemoApp } from "@/components/demo-app";
-
-export default function MarketplacePage() {
-  return <DemoApp />;
-}
+import { redirect } from "next/navigation";
+export default function Page() { redirect("/proveedores"); }

@@ -1,5 +1,2 @@
-import { DemoApp } from "@/components/demo-app";
-
-export default function CompanyRequestPage() {
-  return <DemoApp />;
-}
+import { QuoteRequestPage } from "@/components/prototype-provider";
+export default async function Page({ params }: { params: Promise<{ empresaId: string; solicitudId: string }> }) { const { empresaId, solicitudId } = await params; return <QuoteRequestPage providerId={empresaId} requestId={solicitudId} />; }

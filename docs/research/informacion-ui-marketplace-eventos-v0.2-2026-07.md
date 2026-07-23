@@ -50,17 +50,17 @@ WeddingWire y The Knot organizan la búsqueda por categorías de proveedores y m
 
 La lista debe ser suficientemente amplia para probar distintos proveedores, pero corta para un prototipo.
 
-| Grupo UI | Tipo inicial | Variantes visibles como chips opcionales |
-|---|---|---|
-| Bodas | Matrimonio | civil, religioso, recepción, íntimo |
-| Celebraciones | Cumpleaños | infantil, adulto, temático |
-| Celebraciones | Quinceañero | fiesta, ceremonia y fiesta |
-| Celebraciones | Aniversario | pareja, familiar, empresarial |
-| Familia | Baby shower | tradicional, revelación de género |
-| Familia/religioso | Bautizo | ceremonia, recepción |
-| Académico | Graduación | promoción, fiesta, ceremonia |
-| Corporativo | Evento corporativo | conferencia, seminario, networking, lanzamiento, celebración empresarial |
-| Genérico | Otro evento | nombre libre y breve descripción |
+| Grupo UI          | Tipo inicial       | Variantes visibles como chips opcionales                                 |
+| ----------------- | ------------------ | ------------------------------------------------------------------------ |
+| Bodas             | Matrimonio         | civil, religioso, recepción, íntimo                                      |
+| Celebraciones     | Cumpleaños         | infantil, adulto, temático                                               |
+| Celebraciones     | Quinceañero        | fiesta, ceremonia y fiesta                                               |
+| Celebraciones     | Aniversario        | pareja, familiar, empresarial                                            |
+| Familia           | Baby shower        | tradicional, revelación de género                                        |
+| Familia/religioso | Bautizo            | ceremonia, recepción                                                     |
+| Académico         | Graduación         | promoción, fiesta, ceremonia                                             |
+| Corporativo       | Evento corporativo | conferencia, seminario, networking, lanzamiento, celebración empresarial |
+| Genérico          | Otro evento        | nombre libre y breve descripción                                         |
 
 ### Campos del evento del cliente
 
@@ -82,16 +82,16 @@ No conviene pedir temática, menú o tipo de vehículo en este nivel: pertenecen
 
 Las ocho categorías acordadas deben ser servicios independientes. Una empresa puede publicar uno o varios.
 
-| Categoría | Subcategorías/filtros iniciales para la UI |
-|---|---|
-| Locales o salones | salón, jardín, hotel, restaurante, terraza, casa de campo, auditorio, espacio corporativo |
-| Catering | buffet, emplatado, estaciones, bocaditos, bebidas/bar, brunch, menú infantil |
-| Fotografía y video | fotografía, video, foto + video, dron, fotocabina |
-| Decoración | flores, ambientación, iluminación decorativa, fondos/estructuras, decoración temática |
-| Música, DJ y sonido | DJ, banda, solista/ensamble, sonido, iluminación, karaoke |
-| Mobiliario y equipos | mesas/sillas, textiles, menaje, carpas, escenario, A/V, generadores |
-| Entretenimiento | animador, show infantil, baile, magia, hora loca, performance |
-| Transporte | novios/VIP, traslado de invitados, shuttle, van, bus, auto clásico/lujo |
+| Categoría            | Subcategorías/filtros iniciales para la UI                                                |
+| -------------------- | ----------------------------------------------------------------------------------------- |
+| Locales o salones    | salón, jardín, hotel, restaurante, terraza, casa de campo, auditorio, espacio corporativo |
+| Catering             | buffet, emplatado, estaciones, bocaditos, bebidas/bar, brunch, menú infantil              |
+| Fotografía y video   | fotografía, video, foto + video, dron, fotocabina                                         |
+| Decoración           | flores, ambientación, iluminación decorativa, fondos/estructuras, decoración temática     |
+| Música, DJ y sonido  | DJ, banda, solista/ensamble, sonido, iluminación, karaoke                                 |
+| Mobiliario y equipos | mesas/sillas, textiles, menaje, carpas, escenario, A/V, generadores                       |
+| Entretenimiento      | animador, show infantil, baile, magia, hora loca, performance                             |
+| Transporte           | novios/VIP, traslado de invitados, shuttle, van, bus, auto clásico/lujo                   |
 
 ## 4. Modelo común de publicación y precio desde
 
@@ -479,18 +479,18 @@ Los videos estilo TikTok pertenecen al portafolio promocional y deben identifica
 
 ## 9. Información necesaria por pantalla
 
-| Pantalla | Información mínima |
-|---|---|
-| Inicio | tipos de evento, patrocinados etiquetados, empresas mejor valoradas, categorías |
-| Resultados | categoría, filtros del evento, empresa, portada, ubicación/cobertura, rating + conteo, precio desde, unidad/mínimo, patrocinado, comparar |
-| Comparación | misma categoría; precio desde, modalidad, capacidad/cobertura, atributos estandarizados, rating, incluidos principales, CTA cotizar |
-| Perfil de empresa | información empresarial, categorías/servicios, portafolio, rating/reseñas, precios desde, cobertura, CTA |
-| Servicio | modalidad/unidad, mínimo/máximo, incluidos/no incluidos, paquetes, extras y restricciones |
-| Solicitud de cotización | datos del evento + campos propios de la categoría |
-| Cotización | versión, desglose completo, total, condiciones, adelanto/calendario y aceptar/rechazar |
-| Mi evento | contratos separados por proveedor, estado de cotizaciones y resumen de pagos |
-| Pagos | cronología por contrato, próxima cuota, pagado/saldo, estados y comprobantes simulados |
-| Panel empresa | servicios/paquetes, solicitudes, editor de cotización, calendario, bruto/comisión/neto, portafolio y reseñas |
+| Pantalla                | Información mínima                                                                                                                        |
+| ----------------------- | ----------------------------------------------------------------------------------------------------------------------------------------- |
+| Inicio                  | tipos de evento, patrocinados etiquetados, empresas mejor valoradas, categorías                                                           |
+| Resultados              | categoría, filtros del evento, empresa, portada, ubicación/cobertura, rating + conteo, precio desde, unidad/mínimo, patrocinado, comparar |
+| Comparación             | misma categoría; precio desde, modalidad, capacidad/cobertura, atributos estandarizados, rating, incluidos principales, CTA cotizar       |
+| Perfil de empresa       | información empresarial, categorías/servicios, portafolio, rating/reseñas, precios desde, cobertura, CTA                                  |
+| Servicio                | modalidad/unidad, mínimo/máximo, incluidos/no incluidos, paquetes, extras y restricciones                                                 |
+| Solicitud de cotización | datos del evento + campos propios de la categoría                                                                                         |
+| Cotización              | versión, desglose completo, total, condiciones, adelanto/calendario y aceptar/rechazar                                                    |
+| Mi evento               | contratos separados por proveedor, estado de cotizaciones y resumen de pagos                                                              |
+| Pagos                   | cronología por contrato, próxima cuota, pagado/saldo, estados y comprobantes simulados                                                    |
+| Panel empresa           | servicios/paquetes, solicitudes, editor de cotización, calendario, bruto/comisión/neto, portafolio y reseñas                              |
 
 ## 10. Orden recomendado de implementación UI
 

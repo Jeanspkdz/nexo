@@ -1,5 +1,5 @@
-import { DemoApp } from "@/components/demo-app";
+import { ActiveQuotesPage } from "@/components/prototype-client";
 
 export default function QuotationsPage() {
-  return <DemoApp />;
+  return <ActiveQuotesPage />;
 }

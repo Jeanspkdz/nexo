@@ -53,6 +53,10 @@ _Avoid_: Worker account, event customer account
 The person or organization negotiating and contracting an event with a venue.
 _Avoid_: Venue administrator, event worker
 
+**Customer event**:
+The event a User account is organizing, including its shared planning details and the services selected from one or more Event providers.
+_Avoid_: Provider contract, Quotation request, Event venue's Confirmed event
+
 **Event opportunity**:
 The commercial record that tracks a prospective event from its minimum information through quotation, negotiation, loss, or confirmation.
 _Avoid_: Confirmed event, casual greeting
@@ -111,6 +115,10 @@ _Avoid_: Final quotation, arbitrary promotional price, universal price range
 A provider-defined, contractable combination of one or more included services with a base price and explicit limits or conditions.
 _Avoid_: Provider category, final quotation, unpriced promotional description
 
+**Provider service**:
+One published, contractable offering from an Event provider in a Provider category. It can be quoted independently and can contain Service packages, Unit-priced services, or both.
+_Avoid_: Provider category, whole company, Quotation request
+
 **Unit-priced service**:
 A provider offering priced by a declared unit such as person, hour, table, or vehicle, with a minimum contractable quantity.
 _Avoid_: Service package, unspecified starting price, final quotation
@@ -126,6 +134,10 @@ _Avoid_: One contract covering every provider, quotation, entire customer event
 **Provider payment schedule**:
 The advance requirement, installments, amounts, and due dates agreed for one Provider contract. Each Event provider defines its own schedule, while Nexo presents the schedules together within the customer event.
 _Avoid_: Marketplace-wide installment plan, combined provider debt
+
+**Payment installment**:
+One full amount due on a specified date within a Provider payment schedule. In the current prototype, it is paid as a whole and does not accept partial payments.
+_Avoid_: Operational phase, partial payment, combined marketplace payment
 
 ## V1 accounts and quotation
 
