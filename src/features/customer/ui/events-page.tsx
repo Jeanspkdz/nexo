@@ -5,7 +5,16 @@ import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import type { UserEvent } from "@/features/marketplace/domain/models";
 import { transactionStore } from "@/features/transactions";
+import { Button } from "@/shared/ui";
+import { cn } from "@/shared/lib/cn";
 import { ClientGate, useClientAccount } from "./client-gate";
+import {
+  customerPage,
+  flowEmpty,
+  flowHeading,
+  primaryLink,
+  secondaryLink,
+} from "./customer-styles";
 
 function Events() {
   const account = useClientAccount();
@@ -19,8 +28,8 @@ function Events() {
   }, [account.id]);
 
   return (
-    <section className="product-page client-events-page">
-      <header className="flow-page-heading">
+    <section className={customerPage}>
+      <header className={flowHeading}>
         <div>
           <p>Planificación</p>
           <h1>Mis eventos</h1>
@@ -29,32 +38,36 @@ function Events() {
             en un mismo lugar.
           </span>
         </div>
-        <Link className="primary" href="/mis-eventos/nuevo">
+        <Link className={cn(primaryLink, "max-[680px]:w-full")} href="/mis-eventos/nuevo">
           Crear evento
         </Link>
       </header>
-      <div className="flow-rule" />
+      <div className="border-t border-nexo-line" />
       {events.length === 0 ? (
-        <section className="flow-empty">
+        <section className={flowEmpty}>
           <h2>Tu planificación empieza aquí</h2>
           <p>Crea un evento para reunir tus solicitudes, cotizaciones y contratos.</p>
-          <Link className="secondary" href="/mis-eventos/nuevo">
+          <Link className={secondaryLink} href="/mis-eventos/nuevo">
             Crear mi primer evento
           </Link>
         </section>
       ) : (
-        <ul className="event-directory">
+        <ul className="m-0 list-none border-t border-nexo-line p-0">
           {events.map((event) => (
-            <li key={event.id}>
-              <div>
-                <span className="event-date">{event.date}</span>
-                <strong>{event.name}</strong>
-                <small>
+            <li
+              className="flex items-center justify-between gap-4 border-b border-nexo-line py-4 max-[680px]:flex-col max-[680px]:items-start"
+              key={event.id}
+            >
+              <div className="grid gap-[0.28rem]">
+                <span className="text-[0.85rem] font-[650] text-nexo-muted">{event.date}</span>
+                <strong className="text-[1.1rem] text-nexo-plum-deep">{event.name}</strong>
+                <small className="text-nexo-muted">
                   {event.type} · {event.guestCount} invitados · {event.location}
                 </small>
               </div>
-              <button
-                className={selected === event.id ? "secondary event-active" : "secondary"}
+              <Button
+                className={cn("max-[680px]:w-full", selected === event.id && "bg-nexo-surface")}
+                variant="secondary"
                 onClick={() => {
                   transactionStore.selectEvent(account.id, event.id);
                   setSelected(event.id);
@@ -62,13 +75,13 @@ function Events() {
                 }}
               >
                 {selected === event.id ? "Evento activo" : "Abrir evento"}
-              </button>
+              </Button>
             </li>
           ))}
         </ul>
       )}
       <button
-        className="quiet-action"
+        className="mt-8 inline-flex min-h-10 items-center border-0 bg-transparent p-0 font-[650] text-nexo-plum underline"
         onClick={() => {
           transactionStore.reset();
           setEvents([]);

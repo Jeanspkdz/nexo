@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useEffect, useState } from "react";
 import { transactionStore } from "@/features/transactions";
 import { ClientGate, useClientAccount } from "./client-gate";
+import { customerPage, flowEmpty, primaryLink, secondaryLink } from "./customer-styles";
 import { EventContracts } from "./event-contracts-page";
 import { EventQuotes } from "./event-quotes-page";
 import { EventSummary } from "./event-summary-page";
@@ -16,7 +17,7 @@ function ActiveEvent({ section }: { section: ActiveSection }) {
 
   useEffect(() => setEventId(transactionStore.selectedEvent(account.id)?.id ?? null), [account.id]);
 
-  if (eventId === undefined) return <section className="product-page" aria-busy="true" />;
+  if (eventId === undefined) return <section className={customerPage} aria-busy="true" />;
   if (!eventId) {
     const content = {
       plan: [
@@ -34,15 +35,15 @@ function ActiveEvent({ section }: { section: ActiveSection }) {
     }[section];
 
     return (
-      <section className="product-page">
-        <section className="flow-empty">
+      <section className={customerPage}>
+        <section className={flowEmpty}>
           <h1>{content[0]}</h1>
           <p>{content[1]}</p>
-          <div className="empty-actions">
-            <Link className="primary" href="/mis-eventos">
+          <div className="flex flex-wrap gap-3">
+            <Link className={primaryLink} href="/mis-eventos">
               Seleccionar evento
             </Link>
-            <Link className="secondary" href="/mis-eventos/nuevo">
+            <Link className={secondaryLink} href="/mis-eventos/nuevo">
               Crear evento
             </Link>
           </div>
