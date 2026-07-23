@@ -104,7 +104,7 @@ export function LandingPage() {
               sizes="(max-width: 860px) 100vw, 58vw"
             />
           </div>
-          <form className="event-search" action="/explorar" method="get">
+          <form className="event-search" action="/proveedores" method="get">
             <div className="search-tabs" aria-label="Tipo de búsqueda">
               <strong>Buscar servicios</strong>
               <span>Explora opciones para tu fecha</span>
@@ -146,13 +146,13 @@ export function LandingPage() {
               <h2 id="categories-title">Empieza por lo que necesitas</h2>
               <p>Descubre empresas especializadas para cada parte de tu evento.</p>
             </div>
-            <Link className="text-link" href="/explorar">
+            <Link className="text-link" href="/proveedores">
               Ver todos los servicios <span aria-hidden="true">→</span>
             </Link>
           </div>
           <div className="category-rail">
             {categories.map((category) => (
-              <Link className="category-tile" href="/explorar" key={category.name}>
+              <Link className="category-tile" href="/proveedores" key={category.name}>
                 <Image src={category.image} alt="" fill sizes="(max-width: 680px) 78vw, 25vw" />
                 <span>
                   <strong>{category.name}</strong>
@@ -213,7 +213,7 @@ export function LandingPage() {
               Entiende qué incluye cada propuesta, cuánto debes adelantar y qué condiciones acepta
               cada proveedor antes de decidir.
             </p>
-            <Link className="text-link" href="/explorar">
+            <Link className="text-link" href="/proveedores">
               Probar el recorrido de cotización <span aria-hidden="true">→</span>
             </Link>
           </div>
@@ -343,7 +343,7 @@ export function LandingPage() {
           <a href="#explorar">Categorías</a>
           <a href="#como-funciona">Cómo funciona</a>
           <a href="#empresas">Para empresas</a>
-          <Link href="/explorar">Explorar</Link>
+          <Link href="/proveedores">Explorar</Link>
         </nav>
         <p className="copyright">© {new Date().getFullYear()} Nexo. Prototipo de producto.</p>
       </footer>

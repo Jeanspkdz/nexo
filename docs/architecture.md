@@ -55,12 +55,6 @@ Módulo profundo del ciclo comercial. Su interface permite:
 
 La implementación recibe persistencia, reloj y generación de identificadores como dependencias. El adaptador de producción utiliza `localStorage`; las verificaciones pueden usar persistencia en memoria.
 
-### `src/features/legacy`
-
-Implementación anterior todavía requerida por rutas sin paridad funcional en el recorrido actual. Está aislada para impedir que código nuevo dependa accidentalmente de su modelo de estado.
-
-No se añade funcionalidad nueva en `legacy`. Cada ruta se elimina de este módulo después de migrarla y verificar su comportamiento.
-
 ### `src/shared`
 
 Layouts y módulos UI realmente reutilizados por más de una feature. No contiene reglas del dominio.
