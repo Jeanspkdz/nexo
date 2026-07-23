@@ -1,0 +1,19 @@
+@import "tailwindcss";
+@import "./styles.css";
+@import "./landing.css";
+
+@theme {
+  --color-nexo-plum: #532b52;
+  --color-nexo-plum-deep: #241c25;
+  --color-nexo-coral: #e45f4f;
+  --color-nexo-coral-deep: #c94b40;
+  --color-nexo-white: #fafafa;
+  --color-nexo-surface: #f2eff2;
+  --color-nexo-line: #ded9de;
+  --color-nexo-muted: #706570;
+  --color-nexo-success: #28735a;
+  --radius-nexo-control: 9px;
+  --radius-nexo-surface: 12px;
+  --font-nexo-sans: "Segoe UI", system-ui, -apple-system, sans-serif;
+  --font-nexo-serif: Georgia, "Times New Roman", serif;
+}

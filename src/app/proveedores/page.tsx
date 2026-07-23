@@ -1,2 +1,4 @@
-import { ProvidersPage } from "@/components/prototype-client";
-export default function Page() { return <ProvidersPage />; }
+import { ProvidersPage } from "@/features/customer";
+export default function Page() {
+  return <ProvidersPage />;
+}

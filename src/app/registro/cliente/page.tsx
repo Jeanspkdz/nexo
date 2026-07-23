@@ -1,5 +1,5 @@
-import { AuthPage } from "@/components/auth-page";
+import { RegistrationPage } from "@/features/account";
 
 export default function ClientRegistrationPage() {
-  return <AuthPage view="client" />;
+  return <RegistrationPage role="client" />;
 }

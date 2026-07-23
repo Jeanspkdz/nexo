@@ -6,7 +6,7 @@ import {
   ProviderRequests,
   ProviderServices,
   ProviderSummary,
-} from "@/components/prototype-provider";
+} from "@/features/provider";
 export default async function Page({
   params,
 }: {

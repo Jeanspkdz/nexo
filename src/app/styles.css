@@ -665,6 +665,64 @@ dd {
   padding: var(--s5) 0;
   border-bottom: 1px solid var(--line);
 }
+.provider-socials {
+  padding: var(--s5) 0;
+  display: flex;
+  justify-content: space-between;
+  gap: var(--s5);
+  border-bottom: 1px solid var(--line);
+}
+.provider-socials h2,
+.provider-socials p {
+  margin: 0;
+}
+.provider-socials p {
+  margin-top: var(--s1);
+  color: var(--muted);
+}
+.provider-socials nav {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: var(--s2);
+}
+.provider-socials a {
+  min-height: 3rem;
+  padding: 0.55rem 0.7rem;
+  display: grid;
+  grid-template-columns: 1.75rem auto;
+  align-items: center;
+  column-gap: var(--s1);
+  border: 1px solid var(--line);
+  border-radius: var(--control);
+  color: var(--plum);
+  font-size: 0.88rem;
+  font-weight: 650;
+  text-decoration: none;
+}
+.provider-socials a > span {
+  grid-row: 1 / 3;
+  width: 1.75rem;
+  height: 1.75rem;
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  background: var(--surface);
+  font-size: 0.7rem;
+}
+.provider-socials a small {
+  color: var(--muted);
+  font-size: 0.68rem;
+  font-weight: 500;
+}
+.provider-socials a:hover {
+  border-color: var(--plum);
+  background: var(--surface);
+}
+.provider-socials a:focus-visible {
+  outline: 3px solid var(--coral);
+  outline-offset: 2px;
+}
 .portfolio .section-heading span,
 .admin-media > div > span {
   color: var(--plum);
@@ -689,6 +747,35 @@ dd {
   padding: 0.5rem 0;
   color: var(--muted);
   font-size: 0.85rem;
+}
+.provider-video {
+  padding: var(--s5) 0;
+  border-bottom: 1px solid var(--line);
+}
+.provider-video .section-heading {
+  margin-bottom: var(--s3);
+}
+.provider-video .section-heading span {
+  color: var(--plum);
+  font-size: 0.85rem;
+  font-weight: 700;
+}
+.provider-video h2,
+.provider-video p {
+  margin: 0;
+}
+.provider-video p {
+  max-width: 65ch;
+  margin-top: var(--s1);
+  color: var(--muted);
+}
+.provider-video video {
+  width: 100%;
+  aspect-ratio: 16 / 9;
+  display: block;
+  border-radius: var(--radius);
+  background: var(--plum-deep);
+  object-fit: cover;
 }
 .reviews {
   padding: var(--s5) 0;
@@ -1633,6 +1720,13 @@ dd {
   .profile-header > button {
     grid-column: 1/-1;
   }
+  .provider-socials {
+    align-items: stretch;
+    flex-direction: column;
+  }
+  .provider-socials nav {
+    justify-content: flex-start;
+  }
   .profile-header h1,
   .service-title h1,
   .request-heading h1,
@@ -1986,9 +2080,10 @@ dd {
 }
 .request-progress {
   margin: 0 0 var(--s5);
+  margin-block: 4rem;
   padding: 0;
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
+  grid-template-columns: repeat(4, 1fr);
   list-style: none;
   counter-reset: progress;
 }
@@ -2669,6 +2764,9 @@ dd {
   display: grid;
   grid-template-columns: minmax(0, 1fr) 18rem;
   gap: var(--s5);
+}
+.service-detail-content {
+  min-width: 0;
 }
 .service-detail-grid h2 {
   margin: 0 0 var(--s3);

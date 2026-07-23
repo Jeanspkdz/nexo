@@ -1,2 +1,4 @@
-import { EventsPage } from "@/components/prototype-client";
-export default function Page() { return <EventsPage />; }
+import { EventsPage } from "@/features/customer";
+export default function Page() {
+  return <EventsPage />;
+}

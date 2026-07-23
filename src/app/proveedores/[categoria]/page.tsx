@@ -1,2 +1,4 @@
-import { CategoryPage } from "@/components/prototype-client";
-export default async function Page({ params }: { params: Promise<{ categoria: string }> }) { return <CategoryPage categoryId={(await params).categoria} />; }
+import { CategoryPage } from "@/features/customer";
+export default async function Page({ params }: { params: Promise<{ categoria: string }> }) {
+  return <CategoryPage categoryId={(await params).categoria} />;
+}

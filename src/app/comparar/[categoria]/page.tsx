@@ -1,4 +1,4 @@
-import { DemoApp } from "@/components/demo-app";
+import { DemoApp } from "@/features/legacy";
 
 export default function ComparePage() {
   return <DemoApp />;

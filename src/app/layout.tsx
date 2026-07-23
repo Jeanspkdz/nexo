@@ -1,6 +1,5 @@
 import type { Metadata } from "next";
-import "./styles.css";
-import "./landing.css";
+import "./globals.css";
 
 export const metadata: Metadata = {
   title: "Nexo | Organiza tu evento con claridad",

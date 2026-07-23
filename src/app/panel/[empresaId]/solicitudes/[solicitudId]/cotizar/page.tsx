@@ -1,4 +1,4 @@
-import { QuoteRequestPage } from "@/components/prototype-provider";
+import { QuoteRequestPage } from "@/features/provider";
 
 export default async function Page({
   params,

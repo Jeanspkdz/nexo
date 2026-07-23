@@ -1,4 +1,4 @@
-import { ActivePaymentsPage } from "@/components/prototype-client";
+import { ActivePaymentsPage } from "@/features/customer";
 
 export default function PaymentsPage() {
   return <ActivePaymentsPage />;

@@ -1,5 +1,5 @@
-import { AuthPage } from "@/components/auth-page";
+import { LoginPage as AccountLoginPage } from "@/features/account";
 
 export default function LoginPage() {
-  return <AuthPage view="login" />;
+  return <AccountLoginPage />;
 }

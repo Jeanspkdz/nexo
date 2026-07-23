@@ -1,5 +1,5 @@
-import { AuthPage } from "@/components/auth-page";
+import { AccountChoicePage } from "@/features/account";
 
 export default function RegisterPage() {
-  return <AuthPage view="choice" />;
+  return <AccountChoicePage />;
 }

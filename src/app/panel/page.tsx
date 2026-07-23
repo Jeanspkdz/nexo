@@ -1,2 +1,4 @@
-import { ProviderPanelRedirect } from "@/components/prototype-provider";
-export default function Page() { return <ProviderPanelRedirect />; }
+import { ProviderPanelRedirect } from "@/features/provider";
+export default function Page() {
+  return <ProviderPanelRedirect />;
+}
