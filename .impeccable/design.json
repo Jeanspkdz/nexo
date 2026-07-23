@@ -1,0 +1,194 @@
+{
+  "schemaVersion": 2,
+  "generatedAt": "2026-07-21T23:00:00-05:00",
+  "title": "Design System: Nexo",
+  "extensions": {
+    "colorMeta": {
+      "nexo-plum": {
+        "role": "primary",
+        "displayName": "Ciruela Nexo",
+        "canonical": "oklch(35% 0.105 326)",
+        "tonalRamp": [
+          "oklch(15% 0.035 326)",
+          "oklch(25% 0.075 326)",
+          "oklch(35% 0.105 326)",
+          "oklch(45% 0.105 326)",
+          "oklch(58% 0.09 326)",
+          "oklch(72% 0.06 326)",
+          "oklch(86% 0.025 326)",
+          "oklch(95% 0.008 326)"
+        ]
+      },
+      "action-coral": {
+        "role": "secondary",
+        "displayName": "Coral de Encuentro",
+        "canonical": "oklch(65% 0.19 31)",
+        "tonalRamp": [
+          "oklch(18% 0.055 31)",
+          "oklch(30% 0.11 31)",
+          "oklch(44% 0.16 31)",
+          "oklch(56% 0.18 31)",
+          "oklch(65% 0.19 31)",
+          "oklch(74% 0.145 31)",
+          "oklch(86% 0.07 31)",
+          "oklch(95% 0.025 31)"
+        ]
+      },
+      "neutral-white": {
+        "role": "neutral",
+        "displayName": "Blanco Neutro",
+        "canonical": "#FAFAFA",
+        "tonalRamp": [
+          "#241C25",
+          "#403740",
+          "#5F545F",
+          "#807580",
+          "#A298A2",
+          "#C2BBC2",
+          "#E1DDE1",
+          "#FAFAFA"
+        ]
+      },
+      "success": {
+        "role": "semantic",
+        "displayName": "Verde de Confirmación",
+        "canonical": "#28735A",
+        "tonalRamp": [
+          "#10281F",
+          "#194332",
+          "#225E47",
+          "#28735A",
+          "#4C9278",
+          "#7FB6A0",
+          "#B8DACA",
+          "#E5F3EC"
+        ]
+      }
+    },
+    "typographyMeta": {
+      "display": {
+        "displayName": "Promesa editorial",
+        "purpose": "Titular principal y cierres de marca."
+      },
+      "headline": {
+        "displayName": "Titular de sección",
+        "purpose": "Jerarquía de las secciones públicas."
+      },
+      "body": { "displayName": "Explicación", "purpose": "Prosa, navegación y producto." },
+      "label": { "displayName": "Acción", "purpose": "Botones, controles y metadatos." }
+    },
+    "shadows": [
+      {
+        "name": "functional-float",
+        "value": "0 8px 8px rgba(36, 28, 37, 0.16)",
+        "purpose": "Buscadores, menús y paneles realmente superpuestos."
+      },
+      {
+        "name": "interactive-response",
+        "value": "0 4px 8px rgba(36, 28, 37, 0.10)",
+        "purpose": "Respuesta breve en hover."
+      }
+    ],
+    "motion": [
+      {
+        "name": "state",
+        "value": "180ms cubic-bezier(0.25, 1, 0.5, 1)",
+        "purpose": "Cambios de color, foco y navegación."
+      },
+      {
+        "name": "media",
+        "value": "400ms cubic-bezier(0.25, 1, 0.5, 1)",
+        "purpose": "Escala contenida de fotografía en hover."
+      }
+    ],
+    "breakpoints": [
+      { "name": "mobile", "value": "720px" },
+      { "name": "compact-desktop", "value": "1000px" }
+    ]
+  },
+  "components": [
+    {
+      "name": "Primary Button",
+      "kind": "button",
+      "refersTo": "button-primary",
+      "description": "Acción decisiva, rara y directa.",
+      "html": "<button class=\"ds-btn-primary\">Organizar mi evento</button>",
+      "css": ".ds-btn-primary{min-height:48px;padding:12px 20px;border:0;border-radius:9px;background:#E45F4F;color:#fff;font:650 14px/1.15 'Segoe UI',system-ui,sans-serif;transition:background 180ms cubic-bezier(.25,1,.5,1),transform 120ms cubic-bezier(.25,1,.5,1)}.ds-btn-primary:hover{background:#C94B40}.ds-btn-primary:active{transform:translateY(1px)}.ds-btn-primary:focus-visible{outline:3px solid #E45F4F;outline-offset:3px}"
+    },
+    {
+      "name": "Secondary Button",
+      "kind": "button",
+      "refersTo": "button-secondary",
+      "description": "Alternativa clara sin competir con la acción primaria.",
+      "html": "<button class=\"ds-btn-secondary\">Registrar mi empresa</button>",
+      "css": ".ds-btn-secondary{min-height:48px;padding:12px 20px;border:1px solid #532B52;border-radius:9px;background:transparent;color:#532B52;font:650 14px/1.15 'Segoe UI',system-ui,sans-serif;transition:background 180ms cubic-bezier(.25,1,.5,1),color 180ms cubic-bezier(.25,1,.5,1)}.ds-btn-secondary:hover{background:#532B52;color:#fff}.ds-btn-secondary:focus-visible{outline:3px solid #E45F4F;outline-offset:3px}"
+    },
+    {
+      "name": "Search Field",
+      "kind": "input",
+      "refersTo": "search-field",
+      "description": "Control familiar con etiqueta persistente.",
+      "html": "<label class=\"ds-field\"><span>Ubicación</span><input value=\"Lima, Perú\" aria-label=\"Ubicación\"></label>",
+      "css": ".ds-field{display:grid;gap:3px;padding:6px 12px;border:1px solid #DED9DE;border-radius:9px;background:#FAFAFA;color:#241C25;font-family:'Segoe UI',system-ui,sans-serif}.ds-field span{font-size:11px;font-weight:650;color:#706570}.ds-field input{border:0;outline:0;background:transparent;color:#241C25;font:400 14px/1.4 inherit}.ds-field:focus-within{outline:3px solid #E45F4F;outline-offset:2px}"
+    },
+    {
+      "name": "Positive Status",
+      "kind": "chip",
+      "refersTo": "status-positive",
+      "description": "Confirmación textual y cromática.",
+      "html": "<span class=\"ds-status\">✓ Disponible</span>",
+      "css": ".ds-status{display:inline-flex;align-items:center;gap:6px;padding:7px 11px;border-radius:999px;background:#E5F3EC;color:#28735A;font:650 12px/1.15 'Segoe UI',system-ui,sans-serif}"
+    },
+    {
+      "name": "Landing Navigation",
+      "kind": "nav",
+      "description": "Navegación tranquila con una sola acción coral.",
+      "html": "<nav class=\"ds-nav\"><strong>Nexo</strong><a href=\"#\">Explorar</a><a href=\"#\">Cómo funciona</a><button>Crear cuenta</button></nav>",
+      "css": ".ds-nav{display:flex;align-items:center;gap:28px;padding:16px 24px;background:#FAFAFA;color:#241C25;font:400 14px/1.2 'Segoe UI',system-ui,sans-serif}.ds-nav strong{margin-right:auto;color:#532B52;font:400 28px/1 Georgia,serif}.ds-nav a{color:inherit;text-decoration:none}.ds-nav a:hover{color:#532B52}.ds-nav button{padding:11px 16px;border:0;border-radius:9px;background:#E45F4F;color:#fff;font-weight:650}.ds-nav a:focus-visible,.ds-nav button:focus-visible{outline:3px solid #E45F4F;outline-offset:3px}"
+    }
+  ],
+  "narrative": {
+    "northStar": "La celebración bien conectada",
+    "overview": "Nexo combina la emoción visual de un evento real con la tranquilidad de un proceso económico bien explicado. La fotografía abre la conversación; la jerarquía, los controles familiares y los desgloses concretos convierten esa inspiración en una decisión segura.",
+    "keyCharacteristics": [
+      "Fotografía editorial de eventos diversos, sofisticados y alcanzables.",
+      "Ciruela como identidad; coral escaso para acciones decisivas.",
+      "Titulares serif expresivos y controles sans familiares.",
+      "Información económica explícita, legible y contextual.",
+      "Superficies planas con profundidad reservada para elementos realmente flotantes."
+    ],
+    "rules": [
+      {
+        "name": "The Coral Rarity Rule",
+        "body": "El coral ocupa menos del 10% de una pantalla y señala una acción o transición importante.",
+        "section": "colors"
+      },
+      {
+        "name": "The Semantic Green Rule",
+        "body": "El verde nunca representa la marca; siempre comunica un estado positivo verificable.",
+        "section": "colors"
+      },
+      {
+        "name": "The Two-Voice Rule",
+        "body": "La serif habla de la promesa; la sans explica cómo cumplirla.",
+        "section": "typography"
+      },
+      {
+        "name": "The Flat-by-Default Rule",
+        "body": "Una sección o tarjeta está plana en reposo.",
+        "section": "elevation"
+      }
+    ],
+    "dos": [
+      "Priorizar la decisión antes que la decoración.",
+      "Usar fotografías editoriales de eventos diversos y proveedores trabajando.",
+      "Explicar precios, adelantos y contratos con contexto."
+    ],
+    "donts": [
+      "No parecer una plataforma dedicada únicamente a matrimonios.",
+      "No convertirse en un directorio saturado de anuncios.",
+      "No adoptar la frialdad de una aplicación bancaria.",
+      "No usar fondos crema, glassmorphism o colecciones de tarjetas genéricas."
+    ]
+  }
+}
