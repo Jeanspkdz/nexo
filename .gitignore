@@ -5,3 +5,7 @@ coverage/
 *.tsbuildinfo
 .env*
 !.env.example
+
+# Local agent tooling
+.agents/
+.impeccable/
